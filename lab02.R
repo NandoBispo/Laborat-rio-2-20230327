@@ -34,6 +34,7 @@ dados2 <- read.csv2("florida.csv")
 glimpse(dados2)
 
 # AED ----
+## GAMBÁS ----
 dados|>
   summarytools::descr(
       stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"),
@@ -62,4 +63,11 @@ dados|>
     footnote(general = "Fonte: Instituto Nacional de Diabetes e de Doenças Digestivas e Renais - EUA") |>
     kable_material()
   # add_header_adove(c("Características", "Medidas de Tendência Central e Variadilidade" = 8))
+
+
+## ELEIÇÕES ----
+
+
+
+
 
