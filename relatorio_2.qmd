@@ -1,0 +1,245 @@
+---
+title: "Introdução à Regressão Linear Simples"
+author: "Fernando Bispo, Jeff Caponero"
+format: 
+# html
+    pdf:
+      toc: true
+      toc-title: Sumário
+      colorlinks: true
+      documentclass: report
+      papersize: letter
+      number-sections: false
+---
+
+## Introdução
+
+O presente estudo visa a aplicação das técnicas até o presente momento adquiridas para a implementação da Regressão Linear Simples nos dados contendo medidas morfológicas de 104 gambás das montanhas, que foram capturados através de armadilhas em sete localizações na Inglaterra. As variáveis contidas nesse arquivo são:
+:::{.incrementyal}
+- sexo (**sex**);
+- largura do crânio (**skullw**);
+- comprimento total (**totlngth**).
+:::
+
+```{r}
+#| echo: false
+#| warning: false
+
+if (!require(pacman))
+  install.packages("pacman")
+library(pacman)
+
+pacman::p_load(tidyverse, janitor, kableExtra, summarytools, 
+               moments, ggthemes, patchwork, glue, ggpubr, 
+               formattable,gridExtra)
+
+dados <- read.csv2("possum_red.csv")
+
+dados <- dados |> 
+  mutate(
+    skullw = as.numeric(skullw),
+    totlngth = as.numeric(totlngth),
+    sex = forcats::as_factor(sex)
+  )
+```
+
+
+
+
+
+## Objetivo
+
+O objetivo dessa análise responderá as seguintes questões:
+
+Existem 61 informações do sexo masculino e 43 do sexo feminino
+
+```{r}
+#| echo: false
+#| warning: false
+
+dados|>
+  filter(sex == "f")|>
+  rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|>
+  summarytools::descr(
+      stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"),
+      justify = "c", style = "grid", transpose = T
+    ) |>
+    kbl(
+      caption = "Tabela 1: Medidas Resumo para o sexo feminino.",
+      format.args=list(big.mark=".", decimal.mark=","),
+      digits = 2, align = "c", row.names = T,
+      col.names =
+        c("Min", "Q1", "Med", "Média", "Q3", "Max", "Desvio Padrão", "CV")
+    )|>
+    kable_material(c("striped", "hover", "condensed"))|>
+    kable_material()
+
+dados|>
+  filter(sex == "m")|>
+  rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|>
+  summarytools::descr(
+      stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"),
+      justify = "c", style = "grid", transpose = T
+    ) |>
+    kbl(
+      caption = "Tabela 2: Medidas Resumo para o sexo masculino",
+      format.args=list(big.mark=".", decimal.mark=","),
+      digits = 2, align = "c", 
+      row.names = T,
+      col.names =
+        c("Min", "Q1", "Med", "Média", "Q3", "Max", "Desvio Padrão", "CV")
+    )|>
+    kable_material(c("striped", "hover", "condensed"))|>
+    kable_material()
+
+```
+
+You can add options to executable code like this 
+
+```{r}
+#| echo: false
+#| #| warning: false
+
+b1 <- dados|>
+      filter(sex == "m")|>
+  ggplot(aes(x = sex, y = skullw)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = 'Medidas do sexo Masculino',
+    x = "Sexo",
+    y = "Largura do Crânio"
+  ) +
+  scale_y_continuous(
+    labels = scales::number_format(
+      dig.mark = ".",
+      decimal.mark = ","))+
+  theme_bw()
+
+b2 <- dados|>
+      filter(sex == "f")|>
+  ggplot(aes(x = sex, y = skullw)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = 'Medidas do sexo Feminino',
+    x = "Sexo",
+    y = "Largura do Crânio"
+  ) +
+  scale_y_continuous(
+    labels = scales::number_format(
+      dig.mark = ".",
+      decimal.mark = ","))+
+  theme_bw()
+
+b3 <- dados|>
+      filter(sex == "m")|>
+  ggplot(aes(x = sex, y = totlngth)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    x = "Sexo",
+    y = "Comprimento Total"
+  ) +
+  scale_y_continuous(
+    labels = scales::number_format(
+      dig.mark = ".",
+      decimal.mark = ","))+
+  theme_bw()
+
+b4 <- dados|>
+      filter(sex == "f")|>
+  ggplot(aes(x = sex, y = totlngth)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    x = "Sexo",
+    y = "Comprimento Total"
+  ) +
+  scale_y_continuous(
+    labels = scales::number_format(
+      dig.mark = ".",
+      decimal.mark = ","))+
+  theme_bw()
+
+(b1+b2)/(b3+b4)+
+  plot_annotation(
+    title = "Figura 1: Comparação das medidas morfológicas por sexo",
+  ) & theme_bw(base_size = 10) &
+  theme(
+    plot.tag.position = c(0, 1),
+    plot.tag = element_text(size = 12, hjust = 0, vjust = 0)
+  )
+```
+
+
+### Histograma 
+```{r}
+#| echo: false
+#| warning: false
+
+dados|>
+  ggplot() +
+  aes(x = skullw) +
+  geom_histogram(
+    aes(y = after_stat(density)),
+    binwidth = 1.5,
+    fill = "lightblue",
+    colour = "darkblue") +
+  geom_density(
+    alpha = 0.2,
+    fill = "blue",
+    colour = "blue") +
+  labs(
+    title = "",
+    x = "Comprimento Total",
+    y = "Densidade"
+  )
+
+dados|>
+  ggplot() +
+  aes(x = skullw) +
+  geom_histogram(
+    # aes(y = after_stat(density)),
+    binwidth = 1.5,
+    fill = "lightblue",
+    colour = "darkblue") +
+  # geom_density(
+  #   alpha = 0.2,
+  #   fill = "blue",
+  #   colour = "blue") +
+  labs(
+    title = "",
+    x = "Comprimento Total",
+    y = "Densidade"
+  )
+```
+
+
+```{r}
+#| echo: false
+#| warning: false
+
+
+```
+
+
+
+
+### Dispersão
+
+```{r}
+#| echo: false
+#| warning: false
+
+dados|>
+  ggplot(aes(
+    y = skullw, 
+    x = totlngth, color = skullw)) +
+  geom_point()+
+  labs(
+    title = 'Relação entre Comprimento Total e Largura do Crânio',
+    x = 'Comprimento Total',
+    y = 'Largura do Crânio',
+  )+
+  theme_bw()+
+  theme(legend.position = "none")
+
+```
+
