@@ -12,16 +12,6 @@ format:
       number-sections: false
 ---
 
-## Introdução
-
-O presente estudo visa a aplicação das técnicas até o presente momento adquiridas para a implementação da Regressão Linear Simples nos dados contendo medidas morfológicas de 104 gambás das montanhas, que foram capturados através de armadilhas em sete localizações na Inglaterra. As variáveis contidas nesse arquivo são:
-
-:::{.incrementyal}
-- sexo (**sex**);
-- largura do crânio (**skullw**);
-- comprimento total (**totlngth**).
-:::
-
 ```{r}
 #| echo: false
 #| warning: false
@@ -44,14 +34,21 @@ dados <- dados |>
   )
 ```
 
+\newpage
 
+## Introdução
 
+O presente estudo visa a aplicação das técnicas até o presente momento adquiridas para a implementação da Regressão Linear Simples nos dados contendo medidas morfológicas de 104 gambás das montanhas, que foram capturados através de armadilhas em sete localizações na Inglaterra. As variáveis contidas nesse arquivo são:
 
+:::{.incrementyal}
+- sexo (**sex**);
+- largura do crânio (**skullw**);
+- comprimento total (**totlngth**).
+:::
 
 ## Objetivo
 
 O objetivo dessa análise responderá as seguintes questões:
-
 
 
 ## Análise dos dados
