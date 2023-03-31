@@ -86,7 +86,7 @@ dados|>
 
 ### BoxPlot ----
 b1 <- dados|>
-      filter(sex == "m")|>
+      filter(sex == "m")|>#, skullw > 67)|> View()
   ggplot(aes(x = sex, y = skullw)) +
   geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
   labs(
@@ -97,11 +97,16 @@ b1 <- dados|>
   scale_y_continuous(
     labels = scales::number_format(
       dig.mark = ".",
-      decimal.mark = ","))+
+      decimal.mark = ","))+ 
+    stat_summary(
+      fun=mean, geom="point", shape=18, size=3)+
+    annotate("text", x = "m", y = 69.5,
+             label = "68,6",
+             size=2, color="blue")+
   theme_bw()
 
 b2 <- dados|>
-      filter(sex == "f")|>
+      filter(sex == "f")|>#, skullw > 67)|> View()
   ggplot(aes(x = sex, y = skullw)) +
   geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
   labs(
@@ -113,6 +118,14 @@ b2 <- dados|>
     labels = scales::number_format(
       dig.mark = ".",
       decimal.mark = ","))+
+    stat_summary(
+      fun=mean, geom="point", shape=18, size=3)+
+    annotate("text", x = "f", y = 68.5,
+             label = "67,7",
+             size=2, color="blue")+
+    annotate("text", x = "f", y = 50.7,
+             label = "51,5",
+             size=2, color="blue")+
   theme_bw()
 
 b3 <- dados|>
@@ -128,6 +141,8 @@ b3 <- dados|>
     labels = scales::number_format(
       dig.mark = ".",
       decimal.mark = ","))+
+  stat_summary(
+    fun=mean, geom="point", shape=18, size=3)+
   theme_bw()
 
 b4 <- dados|>
@@ -143,6 +158,11 @@ b4 <- dados|>
     labels = scales::number_format(
       dig.mark = ".",
       decimal.mark = ","))+
+  stat_summary(
+    fun=mean, geom="point", shape=18, size=3)+
+  annotate("text", x = "f", y = 74,
+           label = "75",
+           size=2, color="blue")+
   theme_bw()
 
 (b1+b2)/(b3+b4)+
@@ -160,6 +180,95 @@ b4 <- dados|>
     plot.tag = element_text(size = 12, hjust = 0, vjust = 0)
   )
 
+### Assimetria ----
+tibble(
+  c("Largura do Crânio", "Comprimento Total"),
+  c(
+    moments::skewness(subset(dados$skullw, dados[2]=="f")),
+    moments::skewness(subset(dados$totlngth, dados[2]=="f")))) |> 
+  kbl(
+    caption = "Coeficientes de Assimetria das variáveis do sexo feminino",
+    digits = 2,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c",
+    col.names =
+      c("Variável", "Coeficiente")
+  ) |>
+  kable_styling(
+    # bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    bootstrap_options = c("striped", "hover"),
+    full_width = F,
+    # fixed_thead = T # Fixa o cabeçalho ao rolar a tabela.
+  ) |>
+  # footnote(general = "Fonte: Edre Coutinho") |>
+  kable_material()
+
+tibble(
+  c("Largura do Crânio", "Comprimento Total"),
+  c(
+    moments::skewness(subset(dados$skullw, dados[2]=="m")),
+    moments::skewness(subset(dados$totlngth, dados[2]=="m")))) |> 
+  kbl(
+    caption = "Coeficientes de Assimetria das variáveis do sexo masculino",
+    digits = 2,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c",
+    col.names =
+      c("Variável", "Coeficiente")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = F,
+  ) |>
+  kable_material()
+
+tibble(
+  c("Largura do Crânio", "Comprimento Total"),
+  c(
+    moments::skewness(dados$skullw),
+    moments::skewness(dados$totlngth))) |> 
+  kbl(
+    caption = "Coeficientes de Assimetria",
+    digits = 2,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c",
+    col.names =
+      c("Variável", "Coeficiente")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = F,
+  ) |>
+  kable_material()
+
+moments::skewness(subset(dados$skullw, dados[2]=="f"))
+moments::skewness(subset(dados$skullw, dados[2]=="m"))
+moments::skewness(dados$skullw)
+
+### Curtose ----
+tibble(
+  c("Largura do Crânio", "Comprimento Total"),
+  c(
+    moments::kurtosis(dados$skullw),
+    moments::kurtosis(dados$totlngth))) |> 
+  kbl(
+    caption = "Coeficientes de Curtose",
+    digits = 2,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c",
+    col.names =
+      c("Variável", "Coeficiente")
+  ) |>
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = F,
+  ) |>
+  kable_material()
+
+
+  
+  
+  
 ### Barras ----
 
 dados|>
@@ -384,6 +493,30 @@ dados|>
 
   cor.test(dados$skullw, dados$totlngth)
 
+dados|>
+  filter(skullw < 63)|>
+  ggplot(aes(
+    y = skullw, 
+    x = totlngth, color = skullw)) +
+  geom_point()+
+  labs(
+    title = 'Figura 5: Relação entre Comprimento Total e Largura do Crânio',
+    x = 'Comprimento Total',
+    y = 'Largura do Crânio')+
+  theme_bw(base_size = 10)+
+  theme(legend.position = "none")
+
+# dados|>
+
+  round(cor(subset(dados$skullw, dados[3]<63), subset(dados$totlngth, dados[3]<63)),4)
+  
+cor.test(subset(dados$skullw, dados[3]<63), subset(dados$totlngth, dados[3]<63))
+  
+  cor.test(dados$skullw, dados$totlngth)
+  
+  
+  
+  
 ## ELEIÇÕES ----
 
 
