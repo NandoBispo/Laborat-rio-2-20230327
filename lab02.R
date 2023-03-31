@@ -3,9 +3,12 @@ if (!require(pacman))
   install.packages("pacman")
 library(pacman)
 
-pacman::p_load(tidyverse, janitor, kableExtra, summarytools, 
-               moments, ggthemes, patchwork, glue, ggpubr, 
-               formattable, gridExtra)
+pacman::p_load(tidyverse,  janitor, stargazer,  sjmisc, summarytools,
+               kableExtra, moments, ggpubr, formattable, gridExtra, 
+               glue, corrplot, sessioninfo, readxl, writexl, ggthemes,
+               ggpur, patchwork, qqplotr, plotly, lmtest, olsrr, gglm,
+               tidymodels)
+
 
 # https://curso-r.githud.io/zen-do-r/git-githud.html
 gitcreds::gitcreds_set()
@@ -488,6 +491,40 @@ dados|>
   theme_bw(base_size = 10)+
   theme(legend.position = "none")
 
+dados|>
+  ggplot() +
+  geom_point(aes(x = totlngth, y = skullw))+
+  # geom_smooth(method = 'lm')+
+  labs(
+    title = 'Figura 5: Relação entre Comprimento Total e Largura do Crânio',
+    x = 'Comprimento Total',
+    y = 'Largura do Crânio')+
+  scale_x_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    )) +
+  theme_bw(base_size = 10)+
+  theme(legend.position = "none")
+
+df %>% 
+  ggplot()+
+  geom_point(aes(x = bmi, y = charges))+
+  geom_smooth(method = 'lm')+
+  labs(
+    title = "Figura 4: Relação entre o Preço com o IMC",
+    # subtitle = ,
+    x = "IMC",
+    y = "Preço do Seguro Saúde",
+    caption = "Fonte: Edre Coutinho"
+  ) +
+  scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    )) +
+  theme_bw()
+
 # dados|>
   round(cor(dados$skullw, dados$totlngth),4)
 
@@ -507,6 +544,10 @@ dados|>
   theme(legend.position = "none")
 
 # dados|>
+dados|>
+  select(skullw, totlngth)|>
+  cor()|>
+  round(digits = 4)
 
   round(cor(subset(dados$skullw, dados[3]<63), subset(dados$totlngth, dados[3]<63)),4)
   
@@ -515,7 +556,47 @@ cor.test(subset(dados$skullw, dados[3]<63), subset(dados$totlngth, dados[3]<63))
   cor.test(dados$skullw, dados$totlngth)
   
   
+### Teste ----
+#### Gráficos de dispersão + correlação das variáveis de interesse ----
+  dados %>%
+    select(skullw, totlngth) %>% 
+    GGally::ggpairs(title = "Correlações") # Gráfico de dispersão + matriz sigma
   
+  # AJUSTE DO MODELO ----
+  (mFit <- lm(skullw ~ totlngth, data = dados)) # mFit = modelo ajustado
+  
+  # Ao se acrescentar -1 na VA explicativa, se omite o beta0 do modelo.
+  lm(skullw ~ totlngth - 1, data = dados) # Modelo ajustado sem beta0
+  
+  names(mFit) # Identificar todos os elementos que constam dentro do modelo.
+  
+  # O pacote Broom está dentro da biblioteca tidymodels
+  dados_mFit_resid <- broom::augment(mFit) # Organiza em um data frame a saída do modelo ajustado
+  
+  dplyr::glimpse(dados_mFit_resid)
+  
+  ## Gráfico de resíduos padronizads vs preditos ----
+  dados_mFit_resid %>% 
+    ggplot() + 
+    geom_point(aes(x = .fitted, y = .std.resid)) +
+    geom_hline(yintercept = 0) +
+    labs(
+      x = "Valores preditos",
+      y = "Resíduos Padronizados",
+      title = "Gráfico de resíduos padronizads contra preditos"
+    )
+  
+  ## Gráfico de normalidade dos resíduos ----
+  dados_mFit_resid %>% 
+    ggplot(aes(sample = .std.resid)) +
+    stat_qq_band() + # Plota a banda de confiança
+    stat_qq_point() + # Plota os pontos
+    stat_qq_line() + # Plota a reta
+    labs(
+      x = "Quantil teórico",
+      y = "Quantil amostral",
+      title = "Gráfico quantil-quantil normal"
+    )
   
 ## ELEIÇÕES ----
 
