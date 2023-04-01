@@ -6,8 +6,8 @@ library(pacman)
 pacman::p_load(tidyverse,  janitor, stargazer,  sjmisc, summarytools,
                kableExtra, moments, ggpubr, formattable, gridExtra, 
                glue, corrplot, sessioninfo, readxl, writexl, ggthemes,
-               ggpur, patchwork, qqplotr, plotly, lmtest, olsrr, gglm,
-               tidymodels)
+               patchwork, qqplotr, plotly, lmtest, olsrr, gglm,
+               tidymodels, GGally, hrbrthemes)
 
 
 # https://curso-r.githud.io/zen-do-r/git-githud.html
@@ -102,7 +102,7 @@ b1 <- dados|>
       dig.mark = ".",
       decimal.mark = ","))+ 
     stat_summary(
-      fun=mean, geom="point", shape=18, size=3)+
+      fun=mean, geom="point", shape=18, size=3, color = "darkred")+
     annotate("text", x = "m", y = 69.5,
              label = "68,6",
              size=2, color="blue")+
@@ -315,7 +315,29 @@ dados |>
     position=position_stack(vjust=0.5))
 
 
-
+dados %>% 
+  count(sex) %>% 
+  mutate(
+    sex = forcats::fct_reorder(sex, n),
+    tipo = case_when(
+      sex == "f" ~ "Feminino",
+      sex == "m" ~ "Masculino"),
+    pct = round(prop.table(n)*100, 2), 
+    rotulo = glue::glue('{tipo}\n{n} ({pct}%)')) %>% 
+  ggpubr::ggdonutchart(., "pct", 
+                       label = "rotulo", lab.pos = "out",
+                       lab.font = c(4, "plain", "black"),
+                       fill = "sex",  color = "white",
+                       palette = c("#FFAFCC",
+                                   "#A2D2FF"))+
+  labs(
+    title = "Figura 2: Distribuição da variável sexo",
+    x = "Sexo", y = "Frequência"
+  )+
+  theme(
+    legend.position = "none", title = element_text(size = 10)
+    # axis.title = element_text(hjust = 0)
+  )
 
 
 ### Histograma ----
@@ -491,45 +513,7 @@ dados|>
   theme_bw(base_size = 10)+
   theme(legend.position = "none")
 
-dados|>
-  ggplot() +
-  geom_point(aes(x = totlngth, y = skullw))+
-  # geom_smooth(method = 'lm')+
-  labs(
-    title = 'Figura 5: Relação entre Comprimento Total e Largura do Crânio',
-    x = 'Comprimento Total',
-    y = 'Largura do Crânio')+
-  scale_x_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    )) +
-  theme_bw(base_size = 10)+
-  theme(legend.position = "none")
-
-df %>% 
-  ggplot()+
-  geom_point(aes(x = bmi, y = charges))+
-  geom_smooth(method = 'lm')+
-  labs(
-    title = "Figura 4: Relação entre o Preço com o IMC",
-    # subtitle = ,
-    x = "IMC",
-    y = "Preço do Seguro Saúde",
-    caption = "Fonte: Edre Coutinho"
-  ) +
-  scale_y_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    )) +
-  theme_bw()
-
-# dados|>
-  round(cor(dados$skullw, dados$totlngth),4)
-
-  cor.test(dados$skullw, dados$totlngth)
-
+##### Remoção de valores ----
 dados|>
   filter(skullw < 63)|>
   ggplot(aes(
@@ -543,11 +527,19 @@ dados|>
   theme_bw(base_size = 10)+
   theme(legend.position = "none")
 
-# dados|>
+### Correlação ----
+
+round(cor(dados$skullw, dados$totlngth),4)
+
+cor.test(dados$skullw, dados$totlngth)
+
 dados|>
   select(skullw, totlngth)|>
   cor()|>
-  round(digits = 4)
+  round(digits = 4)|>
+  scales::number_format(
+        big.mark = ".",
+        decimal.mark = ",")
 
   round(cor(subset(dados$skullw, dados[3]<63), subset(dados$totlngth, dados[3]<63)),4)
   
@@ -555,14 +547,48 @@ cor.test(subset(dados$skullw, dados[3]<63), subset(dados$totlngth, dados[3]<63))
   
   cor.test(dados$skullw, dados$totlngth)
   
-  
-### Teste ----
 #### Gráficos de dispersão + correlação das variáveis de interesse ----
-  dados %>%
-    select(skullw, totlngth) %>% 
-    GGally::ggpairs(title = "Correlações") # Gráfico de dispersão + matriz sigma
+dados %>% 
+  select(skullw, totlngth) %>%
+  GGally::ggpairs(title = "Correlações")
+  # Gráfico de dispersão + matriz sigma
+
+  ### Regressão ----
+dados %>% 
+    filter(skullw < 63) %>% 
+    ggplot(aes(x = totlngth, y = skullw, colour = skullw)) +
+    geom_point()+#scolor="blue", shape=22, fill="#69b3a2"ize=2.5, pch=21, col="brown4", fill='coral')+
+    geom_smooth(formula = "y ~ x", method="lm", se=F, color="red", fill="#69b3a2")+
+    ggpubr::stat_regline_equation(color="blue", label.x = 92, label.y = 50, size = 3)+
+    ggpubr::stat_cor(aes(label = ..r.label..),color="blue", method = "pearson", label.y = 61, p.accuracy = 0.001, size = 3)+ 
+    annotate("text", x = 94.5, y = 51,
+             label = "Modelo Ajustado:",
+             size=3, color="blue")+
+    annotate("text", x = 79, y = 62,
+             label = "Coeficiente de Correlação:",
+             size=3, color="blue")+
+    # facet_wrap(~sex)+ # Divide o gráfico com base em alguma variável
+    labs(
+      title = 'Figura 7: Modelo de Regressão Ajustado entre \no Comprimento Total e Largura do Crânio',
+      x = 'Comprimento Total',
+      y = 'Largura do Crânio')+
+    scale_x_continuous(
+      labels = scales::number_format(
+        big.mark = ".",
+        decimal.mark = ","
+      )) +
+    
+    # hrbrthemes::theme_ipsum(plot_title_size = 15, grid = T, grid_col = "lightgray")+
+    theme_bw(base_size = 10)+
+    theme(legend.position = "none"
+          # title = element_text(size = 5)
+          )
+  warnings()
+    # ggpubr::ggpar(p, palette = "jco")
+    
+
   
-  # AJUSTE DO MODELO ----
+# AJUSTE DO MODELO ----
   (mFit <- lm(skullw ~ totlngth, data = dados)) # mFit = modelo ajustado
   
   # Ao se acrescentar -1 na VA explicativa, se omite o beta0 do modelo.
@@ -573,9 +599,39 @@ cor.test(subset(dados$skullw, dados[3]<63), subset(dados$totlngth, dados[3]<63))
   # O pacote Broom está dentro da biblioteca tidymodels
   dados_mFit_resid <- broom::augment(mFit) # Organiza em um data frame a saída do modelo ajustado
   
+  dados_mFit_resid |>
+    select(skullw, totlngth,.fitted, .resid)|>
+  # rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|>
+    # summarytools::descr(
+    #   stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"),
+    #   # round.digits = 3,
+    #   justify = "c",
+    #   style = "grid", #' rmarkdown',
+    #   transpose = T
+    # ) |>
+    # round(., 2) %>%
+    kbl(
+      caption = "Tabela 1: Medidas Resumo para o sexo feminino.",
+      digits = 2,
+      format.args=list(big.mark=".", decimal.mark=","),
+      align = "c", 
+      row.names = T,
+      col.names =
+        c("Largura Crânio", "Comprimento Total", "Valores Ajustados", "Resíduos")
+    )|>
+    kable_material(c("striped", "hover", "condensed"))|>
+    # kadle_styling(
+    #   # dootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    #   dootstrap_options = c("striped", "hover"),
+    #   full_width = F,
+    #   fixed_thead = T # Fixa o cadeçalho ao rolar a tadela.
+    # ) %>%
+    # footnote(general = "Fonte: Instituto Nacional de Diabetes e de Doenças Digestivas e Renais - EUA") |>
+    kable_material()
+  
   dplyr::glimpse(dados_mFit_resid)
   
-  ## Gráfico de resíduos padronizads vs preditos ----
+  #### Gráfico de resíduos padronizads vs preditos ----
   dados_mFit_resid %>% 
     ggplot() + 
     geom_point(aes(x = .fitted, y = .std.resid)) +
@@ -586,7 +642,7 @@ cor.test(subset(dados$skullw, dados[3]<63), subset(dados$totlngth, dados[3]<63))
       title = "Gráfico de resíduos padronizads contra preditos"
     )
   
-  ## Gráfico de normalidade dos resíduos ----
+  #### Gráfico de normalidade dos resíduos ----
   dados_mFit_resid %>% 
     ggplot(aes(sample = .std.resid)) +
     stat_qq_band() + # Plota a banda de confiança
