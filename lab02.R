@@ -1,7 +1,9 @@
 # PACOTES ----
-if (!require(pacman))
-  install.packages("pacman")
+if (!require(pacman)) install.packages("pacman")
 library(pacman)
+
+# if (!require("DT")) install.packages('DT')
+# xfun::session_info('DT')
 
 pacman::p_load(tidyverse,  janitor, stargazer,  sjmisc, summarytools,
                kableExtra, moments, ggpubr, formattable, gridExtra, 
@@ -675,8 +677,29 @@ dados %>%
       title = "Gráfico quantil-quantil normal"
     )
   
-## ELEIÇÕES ----
+## Parte 2 ----
 
+  
+  dados2 <- read.csv2("../../Semana 2/Laboratório 2-20230327/florida.csv")
+  
+  glimpse(dados2)
+  
+  dados2 <- dados2|> janitor::clean_names()
+  
+  glimpse(dados2)
+  
+  m.bh = max(dados2$bush)
+  m.bn = max(dados2$buchanan)
+  aux = dados2 %>% dplyr::filter(dados2$bush < m.bh)
+  dados.sem = aux %>% dplyr::filter(aux$buchanan < m.bn)
+  
+  dados2|>summarise("Maximo" = max(bush))
+  
+  dados2|>
+    dplyr::filter(
+      bush < max(dados2$bush),
+      buchanan < max(dados2$buchanan))|> View()
+  count()
 
 #git-commit-message-4fc2e396f9.txt
 #git push
