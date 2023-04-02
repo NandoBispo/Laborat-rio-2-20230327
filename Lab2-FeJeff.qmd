@@ -1,17 +1,15 @@
 ---
 title: "LABORATÓRIO 2: Regressão Linear Simples"
 author: Fernando Bispo, Jeff Caponero
-execute:
-    echo: false
-    warning: false
-    # error: false
 format:
     pdf:
-      documentclass: report
-      fontfamily: libertinus
-      papersize: letter
       toc: true
       toc-title: Sumário
+      colorlinks: true
+      documentclass: report
+      papersize: letter
+      number-sections: false
+      fontfamily: libertinus
       lof: false # list of figures
       lot: false # list of tables
       geometry:
@@ -20,18 +18,22 @@ format:
         - right=20mm
         - bottom=20mm
         - heightrounded
-      # colorlinks: true
-      # number-sections: false
       fig-pos: "H"
       fig-align: center
-
-
-      # fontsize: 10
-      # classoption: [twocolumn, landscape] # Coloca o texto em duas colunas e a página no modo paisagem
-      
 ---
 
-<!-- \newpage -->
+\newpage
+
+
+<!-- # execute: -->
+<!-- #     echo: false -->
+<!-- #     warning: false -->
+<!-- #     error: false -->
+<!--       # fontsize: 10 -->
+<!--       # classoption: [twocolumn, landscape] # Coloca o texto em duas colunas e a página no modo paisagem -->
+
+
+\newpage
 
 ## Introdução
 
@@ -164,7 +166,7 @@ Nota-se que as medidas de resumo não apresentam diferenças significativas entr
 <!-- \    -->
 <!-- \    -->
 <!-- #| fig-height: 5 -->
-```{r boxplot}
+```{r fig_1:boxplot}
 #| echo: false
 #| warning: false
 #| fig-height: 5
@@ -256,8 +258,8 @@ b4 <- dados|>
 (b1+b2)/(b3+b4) +
   plot_annotation(
     title = "Figura 1: Comparação das medidas morfológicas por sexo",
-    caption = "Nota:\n Ponto vermelho ao centro do gráfico indicando a média dos dados.",
-    tag_levels = c("A", "1"), tag_prefix = "Sud Fig. ", tag_sep = ".",
+    caption = "Nota: Ponto vermelho ao centro do gráfico indicando a média dos dados.",
+    tag_levels = c("A", "1"), tag_prefix = "Sub Fig. ", tag_sep = ".",
     tag_suffix = ":"
   ) & theme_bw(base_size = 9) &
   theme(
@@ -282,10 +284,11 @@ Tendo em vista a média estar representada pelo ponto vermelho na região centra
 <!-- \    -->
 A Figura 2 retrata a distribuição do sexo, possibilitando identificar o quantitativo de informações por sexo.
 
-```{r grafico_de_rosca}
+```{r fig_2:grafico_de_rosca}
 #| echo: false
 #| warning: false
 #| fig-align: center
+#| fig-height: 3
 
 
 dados %>% 
@@ -352,7 +355,7 @@ h2 <- dados|>
 (h1/h2)+
   plot_annotation(
     title = "Figura 3: Histograma das medidas morfológicas",
-    tag_levels = c("A", "1"), tag_prefix = "Sud Fig. ", tag_sep = ".",
+    tag_levels = c("A", "1"), tag_prefix = "Sub Fig. ", tag_sep = ".",
     tag_suffix = ":"
   ) & theme_bw(base_size = 10) &
   theme(
@@ -427,7 +430,7 @@ d2 <- dados |>
   plot_annotation(
    title = "Figura 4: Densidade das medidas morfológicas dos gambás",
    caption = "Notas: Linha vertical tracejada azul representando a mediana dos dados.    \n Linha vertical tracejada vermelha representando a média dos dados.",
-   tag_levels = c("A", "1"), tag_prefix = "Sud Fig. ", tag_sep = ".",
+   tag_levels = c("A", "1"), tag_prefix = "Sub Fig. ", tag_sep = ".",
     tag_suffix = ":"
   ) & theme_bw(base_size = 10) &
   theme(
@@ -497,7 +500,7 @@ Com o intuito de comparar a relação entre as variáveis largura do crânio (**
 <!-- \    -->
 
 
-```{r dispersao1}
+```{r fig_5}
 #| echo: false
 #| warning: false
 #| fig-align: center
@@ -527,7 +530,7 @@ dados|>
 <!-- \    -->
 <!-- \    -->
 
-É possível identificar uma relação linear positiva entre as características em analise, ao se calcular o coeficiente de correlação de Pearson $\widehat{\rho}$ estimado obteve-se o valor de `r round(cor(dados$skullw, dados$totlngth),4)` caracterizando uma relação **regular**.
+É possível identificar uma relação linear positiva entre as características em analise, ao se calcular o coeficiente de correlação de Pearson $\widehat{\rho}$ estimado obteve-se o valor de `r round(cor(dados$skullw, dados$totlngth), 4)` caracterizando uma relação **regular**.
 
 Para testar a significância da correlação linear ao nível de significância de 5% foi realizado o teste de hipótese para correlação linear, em que a hipótese nula foi rejeitada, podendo assumir com 95% de confiança que **há correlação linear entre as variáveis estudadas**.
 
@@ -536,7 +539,7 @@ Para testar a significância da correlação linear ao nível de significância 
 
 Através da Figura 5 é possível identificar com mais clareza pontos atípicos na relação entre as variáveis morfológicas, a fim de identificar o quão influente são estes pontos no comportamento geral dos dados, a Figura 6 foi construída sem estes pontos.
 
-```{r dispersao2}
+```{r fig_6}
 #| echo: false
 #| warning: false
 #| fig-align: center
@@ -570,7 +573,7 @@ Tendo em vista a relação linear entre os dados em análise, é adequado o estu
 
 ### Ajuste do Modelo e inclusão da reta de regressão
 
-```{r}
+```{r fig_7}
 #| echo: false
 #| warning: false
 #| error: false
@@ -591,18 +594,18 @@ dados %>%
              size=3, color="blue")+
     labs(
       title = 'Figura 7: Modelo de Regressão Ajustado entre \no Comprimento Total e Largura do Crânio',
+      caption = "Nota: Linha vermelha sobreposta aos pontos representando a reta de regressão.",
       x = 'Comprimento Total',
       y = 'Largura do Crânio')+
     theme_bw(base_size = 10)+
     theme(legend.position = "none")
 ```
 
-## Conclusão
+### Conclusão
 
 Diante do modelo gerado baseado nas 104 características coletadas dos gambás se conclui que a cada unidade de comprimento acrescida a largura do crânio cresce 0,36 unidades de comprimento e na condição hipotética de se identificar um comprimento nulo, a largura do crânio seria de 25 unidades de comprimento.
 
 Mesmo que em certas condições existam conclusões impossíveis de serem sustentadas, o que acertadamente se constata é que a largura do crânio dos gambas é diretamente proporcional ao comprimento total do mesmo.
-
 
 \newpage
 
@@ -610,16 +613,15 @@ Mesmo que em certas condições existam conclusões impossíveis de serem susten
 
 ### Apresentação
 
-Com base nos dados sobre a eleição presidencial de 2000 nos Estados Unidos, referentes ao número de votos de cada um dos candidatos por condado no estado da Flórida. Deseja-se investigar a relação entre o número de votos que Bush recebeu em relação ao número de votos recebidos por Buchanan, bem como, trazer um pouco de luz sobre o debate referente aos votos recebidos por Buchanan que poderiam ter sido de Al Gore, se o primeiro não estivesse no pleito. Como Bush e Gore foram os candidatos principais daquela eleição, é de interesse avaliar a relação entre os votos recebidos por Bush e Buchanan na Flórida, que é um Estado importante na corrida presidencial dos EUA. Para isto, ajuste um modelo de regressão linear no qual o número de votos de Bush é usado para predizer o número de votos de Buchanan.
+Com base nos dados sobre a eleição presidencial de 2000 nos Estados Unidos, referentes ao número de votos de cada um dos candidatos por condado no estado da Flórida. Deseja-se investigar a relação entre o número de votos que o candidato Bush recebeu em relação ao número de votos recebidos pelo candidato Buchanan, bem como, trazer um pouco de luz sobre o debate referente aos votos recebidos por Buchanan que poderiam ter sido de Al Gore, se o primeiro não estivesse no pleito. Como Bush e Gore foram os candidatos principais daquela eleição, é de interesse avaliar a relação entre os votos recebidos por Bush e Buchanan na Flórida, que é um Estado importante na corrida presidencial dos EUA. Para isto, ajuste um modelo de regressão linear no qual o número de votos de Bush é usado para predizer o número de votos de Buchanan.
 Os dados estão disponíveis no arquivo "florida.csv". 
 
 
 ### Objetivos
 
-O objetivo dessa análise responderá as seguintes questões:
+O objetivo dessa análise responderá aos seguintes pontos:
 
-(a) Discutir a relação entre os votos recebidos por Bush e por Buchanan através do uso
-de diagramas de dispersão.  
+(a) Discutir a relação entre os votos recebidos por Bush e por Buchanan através do uso de diagramas de dispersão.  
 
 (b) Avaliar a relevância do argumento que os votos de Buchanan poderiam ser direcionados a Al Gore, caso Buchanan não tivesse participado do pleito.  
 
@@ -634,11 +636,10 @@ de diagramas de dispersão.
 O gráfico de dispersão sugere certa correlação positiva entre os votos de Bush e Buchanan, muito embora se observe que no condado de Palm Beach a votação de Buchanan (3.407 votos) represente um dado inesperado, bem como, em menor medida, a votação de Bush em Dade (289.456 votos). Retirados estes valores discrepantes, esta provável correlação parece ainda mais certa.
 
 
-
-
-```{r}
+```{r fig_8}
 #| echo: false
 #| warning: false
+
 
 # DADOS ----
 dados <- read.csv2("florida.csv")
@@ -652,12 +653,24 @@ d1 <- dados |>
     x = BUSH, 
     y = BUCHANAN, color = BUCHANAN)) +
   geom_point()+
+  # ggpubr::stat_cor(
+  #   aes(label = ..r.label..),
+  #   color="blue", method = "pearson", 
+  #   label.x = 28000, label.y = 3000, size = 2)+
+  # annotate("text", x = 75000, y = 3200,
+  #        label = "Coeficiente de Correlação \nde Pearson:",
+  #        size=2, color="blue")+
   labs(
-    title = '',
+    title = 'Dados completos',
     x = 'Votos em Bush',
     y = 'Votos em Buchanan'
   )+
   scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))+
+  scale_x_continuous(
     labels = scales::number_format(
       big.mark = ".",
       decimal.mark = ","
@@ -668,8 +681,15 @@ d1.1 <- dados.sem |>
     x = BUSH, 
     y = BUCHANAN, color = BUCHANAN)) +
   geom_point()+
+  # ggpubr::stat_cor(
+  #   aes(label = ..r.label..),
+  #   color="blue", method = "pearson", 
+  #   label.x = 15000,label.y = 950, size = 2)+
+  # annotate("text", x = 72000, y = 1000,
+  #        label = "Coeficiente de Correlação de Pearson:",
+  #        size=2, color="blue")+
   labs(
-    title = '',
+    title = 'Sem dados discrepantes',
     x = 'Votos em Bush',
     y = 'Votos em Buchanan'
   )+
@@ -677,27 +697,39 @@ d1.1 <- dados.sem |>
     labels = scales::number_format(
       big.mark = ".",
       decimal.mark = ","
+    ))+
+  scale_x_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
     ))
+
 d1+d1.1+plot_annotation(
-  title = "Figura 6: Relação entre votos recebidos por Bush e por Bachanan nos condados da Flórida. (a) Dados completos, (b) Sem dados discrepantes",
-   caption = "Fonte: 2000 OFFICIAL PRESIDENTIAL GENERAL ELECTION RESULTS - USA") &
+  title = "Figura 8: Relação entre votos recebidos por Bush e por Bachanan \nnos condados da Flórida.",
+   caption = "Fonte: 2000 Official Presidential General Election Results - USA",
+  tag_levels = c("A", "1"), tag_prefix = "Sub Fig. ", tag_sep = ".",
+  tag_suffix = ":") &
   theme_bw(base_size = 8) &
   theme(
     legend.position = "none",
     plot.tag.position = c(0, 1),
-    plot.tag = element_text(size = 8, hjust = 0, vjust = 0)
+    plot.tag = element_text(size = 6, hjust = 0, vjust = -0.2)
   )
-
 ```
 
 
-Embora a Figura 1 sugira certa correlação positiva entre os votos de Bush e Buchanan, a análise destes mesmos votos em relação a votação recebida por Al Gore e os votos totais dos condados parece retratar outra realidade (ver Figura 2), qual seja, que a correlação positiva é mais propriamente deviada a um fator externo, e não avaliado inicialmente, que corresponde ao aumento de eleitores nos condados. Desta forma, não parece ser plausível afirmar que a votação dada ao candidato Buchanan seria direcionada a qualquer dos candidatos caso este não participasse do pleito.  
+Embora a Figura 1 sugira certa correlação positiva entre os votos de Bush e Buchanan, a análise destes mesmos votos em relação a votação recebida por Al Gore e os votos totais dos condados parece retratar outra realidade (ver Figura 2), qual seja, que a correlação positiva é mais propriamente devido a um fator externo, e não avaliado inicialmente, que corresponde ao aumento de eleitores nos condados. Desta forma, não parece ser plausível afirmar que a votação dada ao candidato Buchanan seria direcionada a qualquer dos candidatos caso este não participasse do pleito.
+
+Mesmo com a percepção visual da relação positiva trazida pela Figura 1 a medida numérica ajudaria a dirimir qualquer dúvida nesse sentido, medida essa trazida pelo Coeficiente de Correlação de Pearson $\widehat{\rho}$.
+
+Para os dados completos se calculou $\widehat{\rho} =$ `r round(cor(dados$BUSH, dados$BUCHANAN) ,4)`, para os dados após a remoção dos pontos discrepantes se calculou $\widehat{\rho} =$ `r round(cor(dados.sem$BUSH, dados.sem$BUCHANAN), 4)`.
+<!-- , sendo impressa essas medidas no gráfico para complementar a informação. -->
 
 
-
-```{r}
+```{r fig_9}
 #| echo: false
 #| warning: false
+#| fig-height: 5
 
 
 d1 <- dados |>
@@ -706,7 +738,7 @@ d1 <- dados |>
     y = BUCHANAN, color = BUCHANAN)) +
   geom_point()+
   labs(
-    title = '',
+    title = 'Dados completos',
     x = 'Votos em Gore',
     y = 'Votos em Buchanan'
   )+
@@ -714,7 +746,13 @@ d1 <- dados |>
     labels = scales::number_format(
       big.mark = ".",
       decimal.mark = ","
-    ))
+    ))+
+  scale_x_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    )) +
+  theme(title = element_text(size = 7))
 
 d1.1 <- dados.sem |>
   ggplot(aes(
@@ -722,7 +760,7 @@ d1.1 <- dados.sem |>
     y = BUCHANAN, color = BUCHANAN)) +
   geom_point()+
   labs(
-    title = '',
+    title = 'Sem dados discrepantes',
     x = 'Votos em Gore',
     y = 'Votos em Buchanan'
   )+
@@ -730,7 +768,13 @@ d1.1 <- dados.sem |>
     labels = scales::number_format(
       big.mark = ".",
       decimal.mark = ","
-    ))
+    ))+
+  scale_x_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))+
+  theme(title = element_text(size = 7))
 
 d2 <- dados |>
   ggplot(aes(
@@ -743,6 +787,11 @@ d2 <- dados |>
     y = 'Votos em Buchanan'
   )+
   scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))+
+  scale_x_continuous(
     labels = scales::number_format(
       big.mark = ".",
       decimal.mark = ","
@@ -762,21 +811,40 @@ d2.2 <- dados.sem |>
     labels = scales::number_format(
       big.mark = ".",
       decimal.mark = ","
+    ))+
+  scale_x_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
     ))
+
 (d1+d1.1)/(d2+d2.2) + plot_annotation(
-  title = "Figura 7: Relação entre votos recebidos por Gore e por Bachanan e com o total de votos nos condados da Flórida. (a) Dados completos, (b) Sem dados discrepantes", 
-  caption = "Fonte: 2000 OFFICIAL PRESIDENTIAL GENERAL ELECTION RESULTS - USA") &
+  title = "Figura 9: Relação entre votos.",
+  subtitle =  "Relação entre votos recebidos por Gore e por Bachanan e com o total de votos nos condados da Flórida.", 
+  caption = "Fonte: 2000 Official Presidential General Election Results - USA",
+  tag_levels = c("A", "1"), tag_prefix = "Sud Fig. ", tag_sep = ".",
+  tag_suffix = ":") &
   theme_bw(base_size = 8) &
   theme(
     legend.position = "none",
     plot.tag.position = c(0, 1),
-    plot.tag = element_text(size = 8, hjust = 0, vjust = 0)
+    plot.tag = element_text(size = 6, hjust = 0, vjust = 0.1)
   )
-
 ```
 
 
-```{r}
+Assumindo que haja uma correlação entre os votos dos dois candidátos, com base na análise visual, é possível realizar uma regressão linear a partir dos dados dos votos dos condados.
+Para confirmar a afirmação intuitiva seguem os valores do Coeficiente de Correlação:
+
+:::{.incrementyal}
+- Para os dados completos que relacionam os Votos em Buchanan com os Votos em Gore se calculou  $\widehat{\rho} =$ `r round(cor(dados$GORE, dados$BUCHANAN) ,4)`.
+- Para os dados sem os pontos discrepantes que relacionam os Votos em Buchanan com os Votos em Gore se calculou  $\widehat{\rho} =$ `r round(cor(dados.sem$GORE, dados.sem$BUCHANAN) ,4)`.
+- Para os dados completos que relacionam os Votos em Buchanan com o Total de votos do condado  se calculou  $\widehat{\rho} =$ `r round(cor(dados$TOTAL, dados$BUCHANAN) ,4)`.
+- Para os dados sem os pontos discrepantes que relacionam os Votos em Buchanan com o Total de votos do condado  se calculou  $\widehat{\rho} =$ `r round(cor(dados.sem$TOTAL, dados.sem$BUCHANAN) ,4)`.
+:::
+
+
+```{r ajuste2}
 #| echo: false
 #| warning: false
 #| include: false
@@ -787,13 +855,13 @@ c.angular = reg$coefficients[2][[1]]
 resposta = round((152846 - intercepto)/c.angular, 0)
 ```
 
-Assumindo que haja uma correlação entre os votos dos dois candidátos é possével realizar uma regressão linear a partir dos dados dos votos dos condados. A Figura 3 mostra a reta de regressão linear obtida. Com base nesta regressão é possível inferir que caso o candidato Bush tivesse recebido 152.846 votos em um determinado condado, a votação do canditato Buchanan seria de aproximandamente `r resposta` votos.  
 
-\   
-\   
+A Figura 3 mostra a reta de regressão linear obtida. Com base nesta regressão é possível inferir que caso o candidato Bush tivesse recebido 152.846 votos em um determinado condado, a votação do canditato Buchanan seria de aproximandamente `r resposta` votos.  
 
+<!-- \    -->
+<!-- \    -->
 
-```{r}
+```{r fig_10}
 #| echo: false
 #| warning: false
 
@@ -815,27 +883,24 @@ d1<- dados.sem |>
   geom_smooth(method=lm, se=FALSE)
 
 d1+plot_annotation(
-  title = "Figura 8: Relação entre votos recebidos por Bush e por Bachanan nos condados da Flórida e sua regressão linear.") &
+  title = "Figura 10: Relação entre votos recebidos por Bush e por Bachanan nos condados da \nFlórida e sua regressão linear.") &
   theme_bw(base_size = 8) &
   theme(
     legend.position = "none",
     plot.tag.position = c(0, 1),
-    plot.tag = element_text(size = 8, hjust = 0, vjust = 0)
+    plot.tag = element_text(size = 6, hjust = 0, vjust = 0)
   )
 ```
 
-\   
-\   
-
-
-
+<!-- \    -->
+<!-- \    -->
 
 É possível elaborar um código de programação em linguagem R que realize esta mesma previsão utilizando-se do método de Estimativas de Mínimos Quadrados, para se obter $\hat\beta_0$ e $\hat\beta_1$ e assim, prever um valor de votação do canditato Buchanan sob as mesmas condições, como se segue:
 
-\   
-\   
+<!-- \    -->
+<!-- \    -->
 
-```{r}
+```{r modelo}
 #| warning: false
 #| eval: true
 #| results: false
@@ -852,11 +917,10 @@ votos = round(beta0 + 152846 * beta1, 0)
 cat("Caso o candidato Bush tivesse recebido 152.846 votos em um 
     determinado condado, a votação do canditato Buchanan seria 
     de aproximandamente", votos," votos.")
-
 ```
 
-\   
-\   
+<!-- \    -->
+<!-- \    -->
 
 Executando o código acima, obtem-se a estimação por mínimos quadrados de `r votos` votos. Observa-se que por regressão linear a resposta foi de `r resposta` votos, desta forma, percebe-s que ambos os métodos foram similares na predição da votação do candidato Buchanan.
 
@@ -864,478 +928,477 @@ Executando o código acima, obtem-se a estimação por mínimos quadrados de `r 
 
 Parte 1.  
   
-  
 A atividade permite avaliar um modelos de predição que tem boa aderência aos dados disponibilizados, ao mesmo tempo que mostra a fragilidade da técnica quando assume que a correlação entre as votações dos candidatos pode ser explicada apenas pelos votos observados.  
 
-\newpage
+<!-- \newpage -->
 
-## Apêndice
+<!-- ## Apêndice -->
 
-### Script em linguagem R
-
-
-```{r}
-#| echo: true
-#| warning: false
-#| eval: false
-
-# PACOTES ----
-set.seed(7)
-setwd("~/Dropbox/Estatística/2023.1/Regressão/Lab/Lab2")
-
-library(pacman)
-library(tidyverse)
-library(janitor)
-library(kableExtra)
-library(moments)
-library(ggthemes)
-library(patchwork)
-library(glue)
-library(formattable)
-library(gridExtra)
+<!-- ### Script em linguagem R -->
 
 
+<!-- ```{r} -->
+<!-- #| echo: true -->
+<!-- #| warning: false -->
+<!-- #| eval: false -->
 
-###############################################################
-#                                                             #
-#                       PRIMEIRA PARTE                        #
-#                                                             #
-###############################################################
+<!-- # PACOTES ---- -->
+<!-- set.seed(7) -->
+<!-- setwd("~/Dropbox/Estatística/2023.1/Regressão/Lab/Lab2") -->
 
-# DADOS ----
-dados <- read.csv2("possum_red.csv")
-
-dados <- dados |> 
-  mutate(
-    skullw = as.numeric(skullw),
-    totlngth = as.numeric(totlngth),
-    sex = forcats::as_factor(sex)
-  )
-
-# MEDIDAS DE RESUMO ----
-dados|>
-  filter(sex == "f")|>
-  rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|>
-  summarytools::descr(
-      stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"),
-      justify = "c", style = "grid", transpose = T
-    ) |>
-    kbl(
-      caption = "Medidas Resumo para o sexo feminino.",
-      format.args=list(big.mark=".", decimal.mark=","),
-      digits = 2, align = "c", row.names = T,
-      col.names =
-        c("Min", "Q1", "Med", "Média", "Q3", "Max", "D. Padrão", "CV")
-    )|>
-    kable_material(c("striped", "hover", "condensed"))|>
-    kable_material()
-
-dados|>
-  filter(sex == "m")|>
-  rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|>
-  summarytools::descr(
-      stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"),
-      justify = "c", style = "grid", transpose = T
-    ) |>
-    kbl(
-      caption = "Medidas Resumo para o sexo masculino",
-      format.args=list(big.mark=".", decimal.mark=","),
-      digits = 2, align = "c", 
-      row.names = T,
-      col.names =
-        c("Min", "Q1", "Med", "Média", "Q3", "Max", "D. Padrão", "CV")
-    )|>
-    kable_material(c("striped", "hover", "condensed"))|>
-    kable_material()
-
-# BOXPLOTS ----
-b1 <- dados|>
-      filter(sex == "m")|>
-  ggplot(aes(x = sex, y = skullw)) +
-  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
-  labs(
-    title = 'Medidas do sexo Masculino',
-    x = "Sexo",
-    y = "Largura do Crânio"
-  ) +
-  scale_y_continuous(
-    labels = scales::number_format(
-      dig.mark = ".",
-      decimal.mark = ","))+
-  theme_bw()
-
-b2 <- dados|>
-      filter(sex == "f")|>
-  ggplot(aes(x = sex, y = skullw)) +
-  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
-  labs(
-    title = 'Medidas do sexo Feminino',
-    x = "Sexo",
-    y = "Largura do Crânio"
-  ) +
-  scale_y_continuous(
-    labels = scales::number_format(
-      dig.mark = ".",
-      decimal.mark = ","))+
-  theme_bw()
-
-b3 <- dados|>
-      filter(sex == "m")|>
-  ggplot(aes(x = sex, y = totlngth)) +
-  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
-  labs(
-    x = "Sexo",
-    y = "Comprimento Total"
-  ) +
-  scale_y_continuous(
-    labels = scales::number_format(
-      dig.mark = ".",
-      decimal.mark = ","))+
-  theme_bw()
-
-b4 <- dados|>
-      filter(sex == "f")|>
-  ggplot(aes(x = sex, y = totlngth)) +
-  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
-  labs(
-    x = "Sexo",
-    y = "Comprimento Total"
-  ) +
-  scale_y_continuous(
-    labels = scales::number_format(
-      dig.mark = ".",
-      decimal.mark = ","))+
-  theme_bw()
-
-(b1+b2)/(b3+b4)+
-  plot_annotation(
-    title = "Figura 1: Comparação das medidas morfológicas por sexo",
-  ) & theme_bw(base_size = 9) &
-  theme(
-    plot.tag.position = c(0, 1),
-    plot.tag = element_text(size = 12, hjust = 0, vjust = 0)
-  )
-
-# DADOS POR SEXO ----
-dados|>
-  count(sex)|>
-  mutate(
-    sex = forcats::fct_reorder(sex, n),
-    sex = lvls_revalue(sex, c("Feminino", "Masculino")),
-    pct = prop.table(n) * 100)|>
-  ggplot(aes(x = sex, y = n, fill = sex))+
-  geom_col() +
-  geom_text(
-    aes(
-      label = glue::glue("{n} ({round(pct, 2)}%)")), vjust = 1.5)+
-  labs(
-    title = "Figura 2: Distribuição da variável sexo",
-    x = "Sexo", y = "Frequência"
-  ) + theme_bw(base_size = 10) +
-  theme(legend.position = "none")
-
-# HISTOGRAMAS POR SEXO ----
-h1 <- dados|>
-  ggplot() +
-  aes(x = skullw) +
-  geom_histogram(
-    binwidth = 1.5,
-    fill = "lightblue",
-    colour = "darkblue") +
-  labs(
-    x = "Largura do crânio",
-    y = "Densidade"
-  )
-
-h2 <- dados|>
-  ggplot() +
-  aes(x = totlngth) +
-  geom_histogram(
-    binwidth = 1.5,
-    fill = "lightblue",
-    colour = "darkblue") +
-  labs(
-    x = "Comprimento total",
-    y = "Densidade"
-  )
-
-(h1/h2)+
-  plot_annotation(
-    title = "Figura 3: Histograma das medidas morfológicas por sexo",
-  ) & theme_bw(base_size = 10) &
-  theme(
-    plot.tag.position = c(0, 1),
-    plot.tag = element_text(size = 12, hjust = 0, vjust = 0)
-  )
-
-# DISTRIBUIÇÕES POR MM ----
-d1 <- dados |>
-  ggplot(aes(x = skullw)) +
-  geom_density(
-    fill = "lightblue",
-    colour = "blue",
-    alpha = 0.2) +
-  geom_vline(
-    xintercept = mean(dados$skullw),
-    color = "red",
-    linetype = "dashed"
-  ) +
-  geom_vline(
-    xintercept = quantile(dados$skullw, 0.5),
-    color = "blue",
-    linetype = "dashed"
-  ) +
-  labs(
-    title = "",
-    x = "Largura do crânio",
-    y = "Densidade"
-  ) +
-  scale_x_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    ))
-
-d2 <- dados |>
-  ggplot(aes(x = totlngth)) +
-  geom_density(
-    fill = "lightblue",
-    colour = "blue",
-    alpha = 0.2) +
-  geom_vline(
-    xintercept = mean(dados$totlngth),
-    color = "red",
-    linetype = "dashed") +
-  geom_vline(
-    xintercept = quantile(dados$totlngth, 0.5),
-    color = "blue",
-    linetype = "dashed"
-  ) +
-  labs(
-    title = "",
-    x = "Comprimento total",
-    y = "Densidade"
-  ) +
-  scale_x_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    ))
-
-(d1/d2)+
-  plot_annotation(
-   title = "Figura 4: Média, mediana e distribuição das medidas morfológicas",
-  ) & theme_bw(base_size = 10) &
-  theme(
-    plot.tag.position = c(0, 1),
-    plot.tag = element_text(size = 12, hjust = 0, vjust = 0),
-    legend.position = "none"
-  )
-
-# RELAÇÃO COMPRIMENTO X LARGURA ----
-dados|>
-  ggplot(aes(
-    y = skullw, 
-    x = totlngth, color = skullw)) +
-  geom_point()+
-  labs(
-    title = 'Figura 5: Relação entre Comprimento Total e Largura do Crânio',
-    x = 'Comprimento Total',
-    y = 'Largura do Crânio',
-  )+
-  theme_bw(base_size = 10)+
-  theme(legend.position = "none")
+<!-- library(pacman) -->
+<!-- library(tidyverse) -->
+<!-- library(janitor) -->
+<!-- library(kableExtra) -->
+<!-- library(moments) -->
+<!-- library(ggthemes) -->
+<!-- library(patchwork) -->
+<!-- library(glue) -->
+<!-- library(formattable) -->
+<!-- library(gridExtra) -->
 
 
-###############################################################
-#                                                             #
-#                        SEGUNDA PARTE                        #
-#                                                             #
-###############################################################
+
+<!-- ############################################################### -->
+<!-- #                                                             # -->
+<!-- #                       PRIMEIRA PARTE                        # -->
+<!-- #                                                             # -->
+<!-- ############################################################### -->
+
+<!-- # DADOS ---- -->
+<!-- dados <- read.csv2("possum_red.csv") -->
+
+<!-- dados <- dados |>  -->
+<!--   mutate( -->
+<!--     skullw = as.numeric(skullw), -->
+<!--     totlngth = as.numeric(totlngth), -->
+<!--     sex = forcats::as_factor(sex) -->
+<!--   ) -->
+
+<!-- # MEDIDAS DE RESUMO ---- -->
+<!-- dados|> -->
+<!--   filter(sex == "f")|> -->
+<!--   rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|> -->
+<!--   summarytools::descr( -->
+<!--       stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"), -->
+<!--       justify = "c", style = "grid", transpose = T -->
+<!--     ) |> -->
+<!--     kbl( -->
+<!--       caption = "Medidas Resumo para o sexo feminino.", -->
+<!--       format.args=list(big.mark=".", decimal.mark=","), -->
+<!--       digits = 2, align = "c", row.names = T, -->
+<!--       col.names = -->
+<!--         c("Min", "Q1", "Med", "Média", "Q3", "Max", "D. Padrão", "CV") -->
+<!--     )|> -->
+<!--     kable_material(c("striped", "hover", "condensed"))|> -->
+<!--     kable_material() -->
+
+<!-- dados|> -->
+<!--   filter(sex == "m")|> -->
+<!--   rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|> -->
+<!--   summarytools::descr( -->
+<!--       stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"), -->
+<!--       justify = "c", style = "grid", transpose = T -->
+<!--     ) |> -->
+<!--     kbl( -->
+<!--       caption = "Medidas Resumo para o sexo masculino", -->
+<!--       format.args=list(big.mark=".", decimal.mark=","), -->
+<!--       digits = 2, align = "c",  -->
+<!--       row.names = T, -->
+<!--       col.names = -->
+<!--         c("Min", "Q1", "Med", "Média", "Q3", "Max", "D. Padrão", "CV") -->
+<!--     )|> -->
+<!--     kable_material(c("striped", "hover", "condensed"))|> -->
+<!--     kable_material() -->
+
+<!-- # BOXPLOTS ---- -->
+<!-- b1 <- dados|> -->
+<!--       filter(sex == "m")|> -->
+<!--   ggplot(aes(x = sex, y = skullw)) + -->
+<!--   geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+ -->
+<!--   labs( -->
+<!--     title = 'Medidas do sexo Masculino', -->
+<!--     x = "Sexo", -->
+<!--     y = "Largura do Crânio" -->
+<!--   ) + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       dig.mark = ".", -->
+<!--       decimal.mark = ","))+ -->
+<!--   theme_bw() -->
+
+<!-- b2 <- dados|> -->
+<!--       filter(sex == "f")|> -->
+<!--   ggplot(aes(x = sex, y = skullw)) + -->
+<!--   geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+ -->
+<!--   labs( -->
+<!--     title = 'Medidas do sexo Feminino', -->
+<!--     x = "Sexo", -->
+<!--     y = "Largura do Crânio" -->
+<!--   ) + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       dig.mark = ".", -->
+<!--       decimal.mark = ","))+ -->
+<!--   theme_bw() -->
+
+<!-- b3 <- dados|> -->
+<!--       filter(sex == "m")|> -->
+<!--   ggplot(aes(x = sex, y = totlngth)) + -->
+<!--   geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+ -->
+<!--   labs( -->
+<!--     x = "Sexo", -->
+<!--     y = "Comprimento Total" -->
+<!--   ) + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       dig.mark = ".", -->
+<!--       decimal.mark = ","))+ -->
+<!--   theme_bw() -->
+
+<!-- b4 <- dados|> -->
+<!--       filter(sex == "f")|> -->
+<!--   ggplot(aes(x = sex, y = totlngth)) + -->
+<!--   geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+ -->
+<!--   labs( -->
+<!--     x = "Sexo", -->
+<!--     y = "Comprimento Total" -->
+<!--   ) + -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       dig.mark = ".", -->
+<!--       decimal.mark = ","))+ -->
+<!--   theme_bw() -->
+
+<!-- (b1+b2)/(b3+b4)+ -->
+<!--   plot_annotation( -->
+<!--     title = "Figura 1: Comparação das medidas morfológicas por sexo", -->
+<!--   ) & theme_bw(base_size = 9) & -->
+<!--   theme( -->
+<!--     plot.tag.position = c(0, 1), -->
+<!--     plot.tag = element_text(size = 12, hjust = 0, vjust = 0) -->
+<!--   ) -->
+
+<!-- # DADOS POR SEXO ---- -->
+<!-- dados|> -->
+<!--   count(sex)|> -->
+<!--   mutate( -->
+<!--     sex = forcats::fct_reorder(sex, n), -->
+<!--     sex = lvls_revalue(sex, c("Feminino", "Masculino")), -->
+<!--     pct = prop.table(n) * 100)|> -->
+<!--   ggplot(aes(x = sex, y = n, fill = sex))+ -->
+<!--   geom_col() + -->
+<!--   geom_text( -->
+<!--     aes( -->
+<!--       label = glue::glue("{n} ({round(pct, 2)}%)")), vjust = 1.5)+ -->
+<!--   labs( -->
+<!--     title = "Figura 2: Distribuição da variável sexo", -->
+<!--     x = "Sexo", y = "Frequência" -->
+<!--   ) + theme_bw(base_size = 10) + -->
+<!--   theme(legend.position = "none") -->
+
+<!-- # HISTOGRAMAS POR SEXO ---- -->
+<!-- h1 <- dados|> -->
+<!--   ggplot() + -->
+<!--   aes(x = skullw) + -->
+<!--   geom_histogram( -->
+<!--     binwidth = 1.5, -->
+<!--     fill = "lightblue", -->
+<!--     colour = "darkblue") + -->
+<!--   labs( -->
+<!--     x = "Largura do crânio", -->
+<!--     y = "Densidade" -->
+<!--   ) -->
+
+<!-- h2 <- dados|> -->
+<!--   ggplot() + -->
+<!--   aes(x = totlngth) + -->
+<!--   geom_histogram( -->
+<!--     binwidth = 1.5, -->
+<!--     fill = "lightblue", -->
+<!--     colour = "darkblue") + -->
+<!--   labs( -->
+<!--     x = "Comprimento total", -->
+<!--     y = "Densidade" -->
+<!--   ) -->
+
+<!-- (h1/h2)+ -->
+<!--   plot_annotation( -->
+<!--     title = "Figura 3: Histograma das medidas morfológicas por sexo", -->
+<!--   ) & theme_bw(base_size = 10) & -->
+<!--   theme( -->
+<!--     plot.tag.position = c(0, 1), -->
+<!--     plot.tag = element_text(size = 12, hjust = 0, vjust = 0) -->
+<!--   ) -->
+
+<!-- # DISTRIBUIÇÕES POR MM ---- -->
+<!-- d1 <- dados |> -->
+<!--   ggplot(aes(x = skullw)) + -->
+<!--   geom_density( -->
+<!--     fill = "lightblue", -->
+<!--     colour = "blue", -->
+<!--     alpha = 0.2) + -->
+<!--   geom_vline( -->
+<!--     xintercept = mean(dados$skullw), -->
+<!--     color = "red", -->
+<!--     linetype = "dashed" -->
+<!--   ) + -->
+<!--   geom_vline( -->
+<!--     xintercept = quantile(dados$skullw, 0.5), -->
+<!--     color = "blue", -->
+<!--     linetype = "dashed" -->
+<!--   ) + -->
+<!--   labs( -->
+<!--     title = "", -->
+<!--     x = "Largura do crânio", -->
+<!--     y = "Densidade" -->
+<!--   ) + -->
+<!--   scale_x_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       big.mark = ".", -->
+<!--       decimal.mark = "," -->
+<!--     )) -->
+
+<!-- d2 <- dados |> -->
+<!--   ggplot(aes(x = totlngth)) + -->
+<!--   geom_density( -->
+<!--     fill = "lightblue", -->
+<!--     colour = "blue", -->
+<!--     alpha = 0.2) + -->
+<!--   geom_vline( -->
+<!--     xintercept = mean(dados$totlngth), -->
+<!--     color = "red", -->
+<!--     linetype = "dashed") + -->
+<!--   geom_vline( -->
+<!--     xintercept = quantile(dados$totlngth, 0.5), -->
+<!--     color = "blue", -->
+<!--     linetype = "dashed" -->
+<!--   ) + -->
+<!--   labs( -->
+<!--     title = "", -->
+<!--     x = "Comprimento total", -->
+<!--     y = "Densidade" -->
+<!--   ) + -->
+<!--   scale_x_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       big.mark = ".", -->
+<!--       decimal.mark = "," -->
+<!--     )) -->
+
+<!-- (d1/d2)+ -->
+<!--   plot_annotation( -->
+<!--    title = "Figura 4: Média, mediana e distribuição das medidas morfológicas", -->
+<!--   ) & theme_bw(base_size = 10) & -->
+<!--   theme( -->
+<!--     plot.tag.position = c(0, 1), -->
+<!--     plot.tag = element_text(size = 12, hjust = 0, vjust = 0), -->
+<!--     legend.position = "none" -->
+<!--   ) -->
+
+<!-- # RELAÇÃO COMPRIMENTO X LARGURA ---- -->
+<!-- dados|> -->
+<!--   ggplot(aes( -->
+<!--     y = skullw,  -->
+<!--     x = totlngth, color = skullw)) + -->
+<!--   geom_point()+ -->
+<!--   labs( -->
+<!--     title = 'Figura 5: Relação entre Comprimento Total e Largura do Crânio', -->
+<!--     x = 'Comprimento Total', -->
+<!--     y = 'Largura do Crânio', -->
+<!--   )+ -->
+<!--   theme_bw(base_size = 10)+ -->
+<!--   theme(legend.position = "none") -->
 
 
-# DADOS ----
-dados <- read.csv2("florida.csv")
-m.bh = max(dados$BUSH)
-m.bn = max(dados$BUCHANAN)
-aux = dados %>% dplyr::filter(dados$BUSH < m.bh)
-dados.sem = aux %>% dplyr::filter(aux$BUCHANAN < m.bn)
-
-# GRÁFICOS DE DISPERSÃO BUBH X BUCHANAN ----
-
-d1 <- dados |>
-  ggplot(aes(
-    x = BUSH, 
-    y = BUCHANAN, color = BUCHANAN)) +
-  geom_point()+
-  labs(
-    title = '',
-    x = 'Votos em Bush',
-    y = 'Votos em Buchanan'
-  )+
-  scale_y_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    ))
-
-d1.1 <- dados.sem |>
-  ggplot(aes(
-    x = BUSH, 
-    y = BUCHANAN, color = BUCHANAN)) +
-  geom_point()+
-  labs(
-    title = '',
-    x = 'Votos em Bush',
-    y = 'Votos em Buchanan'
-  )+
-  scale_y_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    ))
-d1+d1.1+plot_annotation(
-  title = "Figura 6: Relação entre votos recebidos por Bush e 
-  por Bachanan nos condados da Flórida. (a) Dados completos, 
-  (b) Sem dados discrepantes",
-   caption = "Fonte: 2000 OFFICIAL PRESIDENTIAL GENERAL ELECTION
-  RESULTS - USA") &
-  theme_bw(base_size = 8) &
-  theme(
-    legend.position = "none",
-    plot.tag.position = c(0, 1),
-    plot.tag = element_text(size = 8, hjust = 0, vjust = 0)
-  )
+<!-- ############################################################### -->
+<!-- #                                                             # -->
+<!-- #                        SEGUNDA PARTE                        # -->
+<!-- #                                                             # -->
+<!-- ############################################################### -->
 
 
-# GRÁFICOS DE DISPERSÃO GORE X BUCHANAN ----
+<!-- # DADOS ---- -->
+<!-- dados <- read.csv2("florida.csv") -->
+<!-- m.bh = max(dados$BUSH) -->
+<!-- m.bn = max(dados$BUCHANAN) -->
+<!-- aux = dados %>% dplyr::filter(dados$BUSH < m.bh) -->
+<!-- dados.sem = aux %>% dplyr::filter(aux$BUCHANAN < m.bn) -->
 
-d1 <- dados |>
-  ggplot(aes(
-    x = GORE, 
-    y = BUCHANAN, color = BUCHANAN)) +
-  geom_point()+
-  labs(
-    title = '',
-    x = 'Votos em Gore',
-    y = 'Votos em Buchanan'
-  )+
-  scale_y_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    ))
+<!-- # GRÁFICOS DE DISPERSÃO BUBH X BUCHANAN ---- -->
 
-d1.1 <- dados.sem |>
-  ggplot(aes(
-    x = GORE, 
-    y = BUCHANAN, color = BUCHANAN)) +
-  geom_point()+
-  labs(
-    title = '',
-    x = 'Votos em Gore',
-    y = 'Votos em Buchanan'
-  )+
-  scale_y_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    ))
+<!-- d1 <- dados |> -->
+<!--   ggplot(aes( -->
+<!--     x = BUSH,  -->
+<!--     y = BUCHANAN, color = BUCHANAN)) + -->
+<!--   geom_point()+ -->
+<!--   labs( -->
+<!--     title = '', -->
+<!--     x = 'Votos em Bush', -->
+<!--     y = 'Votos em Buchanan' -->
+<!--   )+ -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       big.mark = ".", -->
+<!--       decimal.mark = "," -->
+<!--     )) -->
 
-d2 <- dados |>
-  ggplot(aes(
-    x = TOTAL, 
-    y = BUCHANAN, color = BUCHANAN)) +
-  geom_point()+
-  labs(
-    title = '',
-    x = 'Total de votos do condado',
-    y = 'Votos em Buchanan'
-  )+
-  scale_y_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    ))
-
-d2.2 <- dados.sem |>
-  ggplot(aes(
-    x = TOTAL, 
-    y = BUCHANAN, color = BUCHANAN)) +
-  geom_point()+
-  labs(
-    title = '',
-    x = 'Total de votos do condado',
-    y = 'Votos em Buchanan'
-  )+
-  scale_y_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    ))
-(d1+d1.1)/(d2+d2.2) + plot_annotation(
-  title = "Figura 7: Relação entre votos recebidos por Gore e por 
-  Bachanan e com o total de votos nos condados da Flórida. 
-  (a) Dados completos, (b) Sem dados discrepantes", 
-  caption = "Fonte: 2000 OFFICIAL PRESIDENTIAL GENERAL ELECTION 
-  RESULTS - USA") &
-  theme_bw(base_size = 8) &
-  theme(
-    legend.position = "none",
-    plot.tag.position = c(0, 1),
-    plot.tag = element_text(size = 8, hjust = 0, vjust = 0)
-  )
-
-# REGRESSÃO LINEAR ----
-
-reg = lm(dados.sem$BUSH ~ dados.sem$BUCHANAN)
-intercepto = reg$coefficients[1][[1]]
-c.angular = reg$coefficients[2][[1]]
-resposta = round((152846 - intercepto)/c.angular, 0)
+<!-- d1.1 <- dados.sem |> -->
+<!--   ggplot(aes( -->
+<!--     x = BUSH,  -->
+<!--     y = BUCHANAN, color = BUCHANAN)) + -->
+<!--   geom_point()+ -->
+<!--   labs( -->
+<!--     title = '', -->
+<!--     x = 'Votos em Bush', -->
+<!--     y = 'Votos em Buchanan' -->
+<!--   )+ -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       big.mark = ".", -->
+<!--       decimal.mark = "," -->
+<!--     )) -->
+<!-- d1+d1.1+plot_annotation( -->
+<!--   title = "Figura 6: Relação entre votos recebidos por Bush e  -->
+<!--   por Bachanan nos condados da Flórida. (a) Dados completos,  -->
+<!--   (b) Sem dados discrepantes", -->
+<!--    caption = "Fonte: 2000 OFFICIAL PRESIDENTIAL GENERAL ELECTION -->
+<!--   RESULTS - USA") & -->
+<!--   theme_bw(base_size = 8) & -->
+<!--   theme( -->
+<!--     legend.position = "none", -->
+<!--     plot.tag.position = c(0, 1), -->
+<!--     plot.tag = element_text(size = 8, hjust = 0, vjust = 0) -->
+<!--   ) -->
 
 
-d1<- dados.sem |>
-  ggplot(aes(
-    x = BUSH, 
-    y = BUCHANAN, color = BUCHANAN)) +
-  geom_point()+
-  labs(
-    title = '',
-    x = 'Votos em Bush',
-    y = 'Votos em Buchanan'
-  )+
-  scale_y_continuous(
-    labels = scales::number_format(
-      big.mark = ".",
-      decimal.mark = ","
-    ))+
-  geom_smooth(method=lm, se=FALSE)
+<!-- # GRÁFICOS DE DISPERSÃO GORE X BUCHANAN ---- -->
 
-d1+plot_annotation(
-  title = "Figura 8: Relação entre votos recebidos por Bush e por 
-  Bachanan nos condados da Flórida e sua regressão linear.") &
-  theme_bw(base_size = 8) &
-  theme(
-    legend.position = "none",
-    plot.tag.position = c(0, 1),
-    plot.tag = element_text(size = 8, hjust = 0, vjust = 0)
-  )
+<!-- d1 <- dados |> -->
+<!--   ggplot(aes( -->
+<!--     x = GORE,  -->
+<!--     y = BUCHANAN, color = BUCHANAN)) + -->
+<!--   geom_point()+ -->
+<!--   labs( -->
+<!--     title = '', -->
+<!--     x = 'Votos em Gore', -->
+<!--     y = 'Votos em Buchanan' -->
+<!--   )+ -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       big.mark = ".", -->
+<!--       decimal.mark = "," -->
+<!--     )) -->
 
-# MÍNIMOS QUADRADOS ----
+<!-- d1.1 <- dados.sem |> -->
+<!--   ggplot(aes( -->
+<!--     x = GORE,  -->
+<!--     y = BUCHANAN, color = BUCHANAN)) + -->
+<!--   geom_point()+ -->
+<!--   labs( -->
+<!--     title = '', -->
+<!--     x = 'Votos em Gore', -->
+<!--     y = 'Votos em Buchanan' -->
+<!--   )+ -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       big.mark = ".", -->
+<!--       decimal.mark = "," -->
+<!--     )) -->
 
-x = dados$BUSH
-y = dados$BUCHANAN
-n = length(x)
-beta1 = (sum(x*y) - as.numeric(sum(x)) * as.numeric(sum(y))/n) /
-  (sum(x^2) - ((sum (x))^2)/n)
-beta0 = mean(y) - beta1 * mean(x)
-votos = round(beta0 + 152846 * beta1, 0)
+<!-- d2 <- dados |> -->
+<!--   ggplot(aes( -->
+<!--     x = TOTAL,  -->
+<!--     y = BUCHANAN, color = BUCHANAN)) + -->
+<!--   geom_point()+ -->
+<!--   labs( -->
+<!--     title = '', -->
+<!--     x = 'Total de votos do condado', -->
+<!--     y = 'Votos em Buchanan' -->
+<!--   )+ -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       big.mark = ".", -->
+<!--       decimal.mark = "," -->
+<!--     )) -->
 
-cat("Caso o candidato Bush tivesse recebido 152.846 votos em um 
-    determinado condado, a votação do canditato Buchanan seria 
-    de aproximandamente", votos," votos.")
+<!-- d2.2 <- dados.sem |> -->
+<!--   ggplot(aes( -->
+<!--     x = TOTAL,  -->
+<!--     y = BUCHANAN, color = BUCHANAN)) + -->
+<!--   geom_point()+ -->
+<!--   labs( -->
+<!--     title = '', -->
+<!--     x = 'Total de votos do condado', -->
+<!--     y = 'Votos em Buchanan' -->
+<!--   )+ -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       big.mark = ".", -->
+<!--       decimal.mark = "," -->
+<!--     )) -->
+<!-- (d1+d1.1)/(d2+d2.2) + plot_annotation( -->
+<!--   title = "Figura 7: Relação entre votos recebidos por Gore e por  -->
+<!--   Bachanan e com o total de votos nos condados da Flórida.  -->
+<!--   (a) Dados completos, (b) Sem dados discrepantes",  -->
+<!--   caption = "Fonte: 2000 OFFICIAL PRESIDENTIAL GENERAL ELECTION  -->
+<!--   RESULTS - USA") & -->
+<!--   theme_bw(base_size = 8) & -->
+<!--   theme( -->
+<!--     legend.position = "none", -->
+<!--     plot.tag.position = c(0, 1), -->
+<!--     plot.tag = element_text(size = 8, hjust = 0, vjust = 0) -->
+<!--   ) -->
 
-```
+<!-- # REGRESSÃO LINEAR ---- -->
+
+<!-- reg = lm(dados.sem$BUSH ~ dados.sem$BUCHANAN) -->
+<!-- intercepto = reg$coefficients[1][[1]] -->
+<!-- c.angular = reg$coefficients[2][[1]] -->
+<!-- resposta = round((152846 - intercepto)/c.angular, 0) -->
+
+
+<!-- d1<- dados.sem |> -->
+<!--   ggplot(aes( -->
+<!--     x = BUSH,  -->
+<!--     y = BUCHANAN, color = BUCHANAN)) + -->
+<!--   geom_point()+ -->
+<!--   labs( -->
+<!--     title = '', -->
+<!--     x = 'Votos em Bush', -->
+<!--     y = 'Votos em Buchanan' -->
+<!--   )+ -->
+<!--   scale_y_continuous( -->
+<!--     labels = scales::number_format( -->
+<!--       big.mark = ".", -->
+<!--       decimal.mark = "," -->
+<!--     ))+ -->
+<!--   geom_smooth(method=lm, se=FALSE) -->
+
+<!-- d1+plot_annotation( -->
+<!--   title = "Figura 8: Relação entre votos recebidos por Bush e por  -->
+<!--   Bachanan nos condados da Flórida e sua regressão linear.") & -->
+<!--   theme_bw(base_size = 8) & -->
+<!--   theme( -->
+<!--     legend.position = "none", -->
+<!--     plot.tag.position = c(0, 1), -->
+<!--     plot.tag = element_text(size = 8, hjust = 0, vjust = 0) -->
+<!--   ) -->
+
+<!-- # MÍNIMOS QUADRADOS ---- -->
+
+<!-- x = dados$BUSH -->
+<!-- y = dados$BUCHANAN -->
+<!-- n = length(x) -->
+<!-- beta1 = (sum(x*y) - as.numeric(sum(x)) * as.numeric(sum(y))/n) / -->
+<!--   (sum(x^2) - ((sum (x))^2)/n) -->
+<!-- beta0 = mean(y) - beta1 * mean(x) -->
+<!-- votos = round(beta0 + 152846 * beta1, 0) -->
+
+<!-- cat("Caso o candidato Bush tivesse recebido 152.846 votos em um  -->
+<!--     determinado condado, a votação do canditato Buchanan seria  -->
+<!--     de aproximandamente", votos," votos.") -->
+
+<!-- ``` -->
 
 
 

@@ -6,7 +6,7 @@ library(pacman)
 pacman::p_load(tidyverse,  janitor, stargazer,  sjmisc, summarytools,
                kableExtra, moments, ggpubr, formattable, gridExtra, 
                glue, corrplot, sessioninfo, readxl, writexl, ggthemes,
-               patchwork, qqplotr, plotly, lmtest, olsrr, gglm,
+               patchwork, qqplotr, plotly, lmtest, olsrr, gglm, DT,
                tidymodels, GGally, hrbrthemes)
 
 
@@ -37,7 +37,7 @@ dados2 <- read.csv2("florida.csv")
 glimpse(dados2)
 
 # AED ----
-## GAMBÁS ----
+## Tab: GAMBÁS ----
 dados|>
   filter(sex == "f")|>select(sex)|>count()
   rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|>
@@ -69,6 +69,27 @@ dados|>
     kable_material()
   # add_header_adove(c("Características", "Medidas de Tendência Central e Variadilidade" = 8))
 
+dados|>
+  # group_by(sex)|>
+  filter(sex == "m")|>
+  rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|>
+  # DT::datatable()
+  summarytools::descr(
+      stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"),
+      justify = "c", style = "grid", transpose = T
+    ) |> 
+    DT::datatable()
+    # kbl(
+    #   caption = "Tabela 2: Medidas Resumo para o sexo masculino",
+    #   format.args=list(big.mark=".", decimal.mark=","),
+    #   digits = 2, align = "c", 
+    #   row.names = T,
+    #   col.names =
+    #     c("Min", "Q1", "Med", "Média", "Q3", "Max", "Desvio Padrão", "CV")
+    # )|>
+    # kable_material(c("striped", "hover", "condensed"))|>
+    # kable_material()
+    
 dados|>
   filter(sex == "m")|> select(sex)|>count()
   rename("Largura Crânio" = skullw, "Comprimento Total" = totlngth)|>
