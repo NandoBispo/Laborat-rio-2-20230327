@@ -1,0 +1,931 @@
+---
+title: "LABORATÓRIO 2: Regressão Linear Simples"
+author: Fernando Bispo, Jeff Caponero
+format:
+    pdf:
+      toc: true
+      toc-title: Sumário
+      colorlinks: true
+      documentclass: report
+      papersize: letter
+      number-sections: false
+---
+
+
+
+
+# Introdução
+
+O presente relatório está subdividido em duas partes, tendo em vista terem sido disponibilizados dois arquivos para análise, este relatório vem trazendo as análises conforme os pré-requisitos solicitados para cada conjunto de dados. Tendo como principal objetivo a introdução das técnicas de Regressão Linear Simples e a pratica da elaboração de relatórios analíticos fundamentadas na Análise Exploratória de Dados.
+
+
+# Primeira parte
+
+## Apresentação
+
+Nesta primeira parte a análise se dará sobre os dados contendo medidas morfológicas de 104 gambás das montanhas, que foram capturados através de armadilhas em sete localizações na Inglaterra. As variáveis contidas nesse arquivo são:
+
+:::{.incrementyal}
+- Sexo (**sex**);
+- Largura do crânio (**skullw**);
+- Comprimento total (**totlngth**).
+:::
+
+```{r pacotes}
+#| echo: false
+#| warning: false
+
+
+set.seed(7)
+setwd("~/Dropbox/Estatística/2023.1/Regressão/Lab/Lab2")
+
+library(pacman)
+library(tidyverse)
+library(janitor)
+library(kableExtra)
+library(moments)
+library(ggthemes)
+library(patchwork)
+library(glue)
+library(formattable)
+library(gridExtra)
+library(hrbrthemes)
+
+pacman::p_load(tidyverse,  janitor, stargazer,  sjmisc, summarytools,
+               kableExtra, moments, ggpubr, formattable, gridExtra, 
+               glue, corrplot, sessioninfo, readxl, writexl, ggthemes,
+               patchwork,  plotly, lmtest, olsrr, gglm,
+               tidymodels, GGally, hrbrthemes)
+
+dados <- read.csv2("possum_red.csv")
+
+dados <- dados |> 
+  mutate(
+    skullw = as.numeric(skullw),
+    totlngth = as.numeric(totlngth),
+    sex = forcats::as_factor(sex)
+  )
+```
+
+
+## Objetivo
+
+O objetivo dessa análise visa responder aos seguintes tópicos:
+
+:::{.incrementyal}
+(a) Descrição do comportamento de cada uma das variáveis, a partir das medidas morfológicas segundo o sexo.  
+
+(b) Representação gráfica da distribuição do sexo.  
+
+(c) Apresentação de um histograma para as variáveis morfológicas.  
+
+(d) Discução da relação entre as variáveis morfológicas.  
+
+(e) Tratamento dos dados.  
+
+(f) Avaliação do ajuste de um modelo linear de regressão.  
+
+(g) Caso o ajuste seja adequado, apresentar a reta ajustada pelo modelo.  
+:::
+
+## Análise dos dados
+
+Composto por três características (variáveis) morfológicas dos gambás, em que duas destas são classificadas como __aritméticas continuas__, sendo estas a largura do crânio (**skullw**) e o comprimento total (**totlngth**) e uma variável classificada como __**categórica ordinal**__, sendo esta sexo(**sex**).  
+
+A seguir são apresentadas as tabelas com as principais medidas resumo por sexo dos gambás.  
+
+
+
+```{r t1_medidas_resumo}
+#| echo: false
+#| warning: false
+
+dados|>
+  filter(sex == "f")|>
+  rename("Larg. Crânio" = skullw, "Comp. Total" = totlngth)|>
+  summarytools::descr(
+      stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"),
+      justify = "c", style = "grid", transpose = T
+    ) |>
+    kbl(
+      caption = "Medidas Resumo para o sexo feminino.",
+      format.args=list(big.mark=".", decimal.mark=","),
+      digits = 2, align = "c", row.names = T,
+      col.names =
+        c("Min", "Q1", "Med", "Média", "Q3", "Max", "D. Pad", "CV")
+    )|>
+    kable_material(c("striped", "hover", "condensed"))|>
+    kable_styling(
+      full_width = F,
+      position = 'center', latex_options = 'HOLD_position')
+
+dados|>
+  filter(sex == "m")|>
+  rename("Larg. Crânio" = skullw, "Comp. Total" = totlngth)|>
+  summarytools::descr(
+      stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv"),
+      justify = "c", style = "grid", transpose = T
+    ) |>
+    kbl(
+      caption = "Medidas Resumo para o sexo masculino",
+      format.args=list(big.mark=".", decimal.mark=","),
+      digits = 2, align = "c", 
+      row.names = T,
+      col.names =
+        c("Min", "Q1", "Med", "Média", "Q3", "Max", "D. Pad", "CV")
+    )|>
+        kable_material(c("striped", "hover", "condensed"))|>
+    kable_styling(
+      full_width = F,
+      position = 'center', latex_options = 'HOLD_position')
+```
+
+Nota-se que as medidas de resumo não apresentam diferenças significativas entre os dois sexos, avaliando o Coeficiente de Variação de Pearson (CV), sendo esta a medida que avalia o grau de variabilidade dos dados em relação a média, constata-se que sua classificação é baixa, possuindo o valor de 5%, menor que o limite considerado baixo (15%), para todas as características independente do sexo. A fim de se possibilitar uma análise visual, a Figura 1 traz os gráficos de caixa (*BoxPlot*) com as características morfológicas dos gambas separadas por sexo.
+
+
+
+
+
+```{r boxplot}
+#| echo: false
+#| warning: false
+
+
+b1 <- dados|>
+  filter(sex == "m")|>
+  mutate(
+    sex = lvls_revalue(sex, c("Masculino", "Feminino")))|>
+  ggplot(aes(x = sex, y = skullw)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = 'Medidas do sexo Masculino',
+    x = "Sexo",
+    y = "Largura do Crânio"
+  ) +
+  scale_y_continuous(
+    labels = scales::number_format(
+      dig.mark = ".",
+      decimal.mark = ","))+ 
+    stat_summary(
+      fun=mean, geom="point", shape=18, size=3, color = "darkred")+
+    annotate("text", x = "Masculino", y = 69.5,
+             label = "68,6",
+             size=2, color="blue")
+  
+
+b2 <- dados|>
+      filter(sex == "f")|>
+  mutate(
+    sex = lvls_revalue(sex, c("Masculino", "Feminino")))|>
+  ggplot(aes(x = sex, y = skullw)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = 'Medidas do sexo Feminino',
+    x = "Sexo",
+    y = "Largura do Crânio"
+  ) +
+  scale_y_continuous(
+    labels = scales::number_format(
+      dig.mark = ".",
+      decimal.mark = ","))+
+    stat_summary(
+      fun=mean, geom="point", shape=18, size=3, color = "darkred")+
+    annotate("text", x = "Feminino", y = 68.5,
+             label = "67,7",
+             size=2, color="blue")+
+    annotate("text", x = "Feminino", y = 50.7,
+             label = "51,5",
+             size=2, color="blue")
+
+b3 <- dados|>
+      filter(sex == "m")|>
+  mutate(
+    sex = lvls_revalue(sex, c("Masculino", "Feminino")))|>
+  ggplot(aes(x = sex, y = totlngth)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    x = "Sexo",
+    y = "Comp. Total"
+  ) +
+  scale_y_continuous(
+    labels = scales::number_format(
+      dig.mark = ".",
+      decimal.mark = ","))+
+  stat_summary(
+    fun=mean, geom="point", shape=18, size=3, color = "darkred")
+
+b4 <- dados|>
+  filter(sex == "f")|>
+  mutate(
+    sex = lvls_revalue(sex, c("Masculino", "Feminino")))|>
+  ggplot(aes(x = sex, y = totlngth)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    x = "Sexo",
+    y = "Comp. Total"
+  ) +
+  scale_y_continuous(
+    labels = scales::number_format(
+      dig.mark = ".",
+      decimal.mark = ","))+
+  stat_summary(
+    fun=mean, geom="point", shape=18, size=3, color = "darkred")+
+  annotate("text", x = "Feminino", y = 74,
+           label = "75",
+           size=2, color="blue")
+
+(b1+b2)/(b3+b4) +
+  plot_annotation(
+    title = "Figura 1: Comparação das medidas morfológicas por sexo. \n (a) Largura do crânio nos machos; (b) Largura do crânio nas fêmeas; \n (c) Comprimento total dos machos; (d) Comprimento total  dos fêmeas",
+    caption = "Nota:\n Ponto vermelho ao centro do gráfico indicando a média dos dados.",
+    tag_levels = c("A", "1"), tag_prefix = "(",
+    tag_suffix = ")"
+  ) & theme_bw(base_size = 9) &
+  theme(
+    plot.tag.position = c(0, 1),
+    plot.tag = element_text(size = 6, hjust = 0, vjust = -0.7))
+
+# (b3+b4) +
+#   plot_annotation(
+#     # title = "Figura 1: Comparação das medidas morfológicas por sexo",
+#     caption = "Nota: Ponto vermelho ao centro do gráfico indicando a média dos dados."
+#   ) & theme_bw(base_size = 9) &
+#   theme(
+#     plot.tag.position = c(0, 1),
+#     plot.tag = element_text(size = 12, hjust = 0, vjust = 0))
+```
+
+A Figura 1 confirma a percepção advinda das medidas resumo, que não há, em princípio, diferenças significativas entre os sexos, apesar de haver alguns pontos atípicos (*outliers*). É interessante notar a baixa variabilidade entre a largura do crânio para o sexo feminino e seu comportamente aparentemente simétrico, bem como o fato de que apenas o comprimento dos individuos do sexo masculino não apresentou pontos atípicos.
+
+Tendo em vista a média estar representada pelo ponto vermelho na região central do gráfico, possibilitando uma percepção visual acerca da assimetria dos dados ao comparar o posicionamentos da média e da mediana em relação a região central da caixa (região retangular azul da figura), que representa 50% dos dados. Cabe então uma avaliação mais apurada dos dados.
+
+A Figura 2 retrata a distribuição do sexo, possibilitando identificar o quantitativo de informações por sexo.
+
+```{r grafico_de_rosca}
+#| echo: false
+#| warning: false
+#| fig-align: center
+#| fig-pos: H
+
+dados %>% 
+  count(sex) %>% 
+  mutate(
+    sex = forcats::fct_reorder(sex, n),
+    tipo = case_when(
+      sex == "f" ~ "Feminino",
+      sex == "m" ~ "Masculino"),
+    pct = round(prop.table(n)*100, 2), 
+    rotulo = glue::glue('{tipo}\n{n} ({pct}%)')) %>% 
+  ggpubr::ggdonutchart(., "pct", 
+                       label = "rotulo", lab.pos = "out",
+                       lab.font = c(4, "plain", "black"),
+                       fill = "sex",  color = "white",
+                       palette = c("#FFAFCC",
+                                   "#A2D2FF"))+
+  labs(
+    title = "Figura 2: Distribuição da variável sexo",
+    x = "Sexo", y = "Frequência"
+  )+
+  theme(
+    legend.position = "none", title = element_text(size = 10))
+
+```
+
+
+\    
+
+Correspondendo ao item c dos objetivos da análise, segue a Figura 3 com os histogramas das características aritméticas dos gambás sob análise, sem subdivisão por sexo. A fim de identificar com maior clareza a distribuição dos dados das variáveis constantes nos histogramas seguem gráficos de densidade juntamente com as médias e medianas sobrepostas na Figura 4. 
+
+<!-- \    -->
+<!-- \    -->
+
+```{r histogramas}
+#| echo: false
+#| warning: false
+#| fig-align: center
+
+h1 <- dados|>
+  ggplot() +
+  aes(x = skullw) +
+  geom_histogram(
+    binwidth = 1.5,
+    fill = "lightblue",
+    colour = "darkblue") +
+  labs(
+    x = "Largura do crânio",
+    y = "Densidade"
+  )
+
+h2 <- dados|>
+  ggplot() +
+  aes(x = totlngth) +
+  geom_histogram(
+    binwidth = 1.5,
+    fill = "lightblue",
+    colour = "darkblue") +
+  labs(
+    x = "Comprimento total",
+    y = "Densidade"
+  )
+
+(h1/h2)+
+  plot_annotation(
+    title = "Figura 3: Histograma das medidas morfológicas. \n (a) Largura do crânio; (b) Comprimento total.",
+    tag_levels = c("A", "1"), tag_prefix = "(",
+    tag_suffix = ")"
+  ) & theme_bw(base_size = 10) &
+  theme(
+    plot.tag.position = c(0, 1),
+    plot.tag = element_text(size = 8, hjust = 0, vjust = -0.6)
+  )
+```
+
+<!-- \newpage -->
+<!-- \    -->
+
+```{r densidade}
+#| echo: false
+#| warning: false
+#| fig-align: center
+#| fig-height: 4
+
+d1 <- dados |>
+  ggplot(aes(x = skullw)) +
+  geom_density(
+    fill = "lightblue",
+    colour = "blue",
+    alpha = 0.2) +
+  geom_vline(
+    xintercept = mean(dados$skullw),
+    color = "red",
+    linetype = "dashed"
+  ) +
+  geom_vline(
+    xintercept = quantile(dados$skullw, 0.5),
+    color = "blue",
+    linetype = "dashed"
+  ) +
+  labs(
+    title = "",
+    x = "Largura do crânio",
+    y = "Densidade"
+  ) +
+  scale_x_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))
+
+d2 <- dados |>
+  ggplot(aes(x = totlngth)) +
+  geom_density(
+    fill = "lightblue",
+    colour = "blue",
+    alpha = 0.2) +
+  geom_vline(
+    xintercept = mean(dados$totlngth),
+    color = "red",
+    linetype = "dashed") +
+  geom_vline(
+    xintercept = quantile(dados$totlngth, 0.5),
+    color = "blue",
+    linetype = "dashed"
+  ) +
+  labs(
+    title = "",
+    x = "Comprimento total",
+    y = "Densidade"
+  ) +
+  scale_x_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))
+
+(d1/d2)+
+  plot_annotation(
+   title = "Figura 4: Densidade das medidas morfológicas dos gambás \n (a) Largura do crânio; (b) Comprimento total.",
+   caption = "Notas: Linha vertical tracejada azul representando a mediana dos dados.    \n Linha vertical tracejada vermelha representando a média dos dados.",
+   tag_levels = c("A", "1"), tag_prefix = "(",
+    tag_suffix = ")"
+  ) & theme_bw(base_size = 10) &
+  theme(
+    plot.tag.position = c(0, 1),
+    plot.tag = element_text(size = 8, hjust = 0, vjust = 0.8),
+    legend.position = "none"
+  )
+```
+
+Analisando as Figuras 3 e 4 é possível identificar uma leve assimetria positiva para os dados referentes a largura do crânio dos gambás, para os dados referentes ao comprimento total se identifica um comportamento bimodal e uma leve assimetria negativa. A fim de dirimir quaisquer dúvidas sobre a assimetria e curtose dos dados em análise, seguem as tabelas com os valores calculados.
+
+Baseado nos valores que constam na Tabela 3, referente ao coeficiente de assimetria, é possível concluir que a distribuição dos dados referentes ao **comprimento total** apresenta um coeficiente de assimetria positivo, tendo em vista seu valor maior que 0, indicando que a maioria dos valores são menores que a média, caracterizada pela linha tracejada vertical vermelha presente nos gráficos de densidade, já os dados referentes a **largura do crânio** são considerados de assimetria negativa, ou seja, a maioria dos valores dos dados são maiores que a média, em virtude do seu valor menor que zero.
+
+
+```{r tab_assimetria_curtose}
+#| echo: false
+#| warning: false
+#| tbl-colum: page
+#| fig-pos: H
+
+tibble(
+  c("Largura do Crânio", "Comprimento Total"),
+  c(
+    moments::skewness(dados$skullw),
+    moments::skewness(dados$totlngth))) |> 
+  kbl(
+    caption = "Coeficientes de Assimetria",
+    digits = 2,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c",
+    col.names =
+      c("Variável", "Coeficiente")
+  ) |>
+  kable_material(c("striped", "hover", "condensed"))|>
+  kable_styling(
+    bootstrap_options = c("striped", "hover",  "condensed"),
+    full_width = F,
+    position = 'center', latex_options = 'HOLD_position'
+  ) |>
+  kable_material()
+
+tibble(
+  c("Largura do Crânio", "Comprimento Total"),
+  c(
+    moments::kurtosis(dados$skullw),
+    moments::kurtosis(dados$totlngth))) |> 
+  kbl(
+    caption = "Coeficientes de Curtose",
+    digits = 2,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c",
+    col.names =
+      c("Variável", "Coeficiente")
+  ) |>
+  kable_material(c("striped", "hover", "condensed"))|>
+  kable_styling(
+    full_width = F,
+    position = 'center', latex_options = 'HOLD_position'
+  ) |>
+  kable_material()
+```
+
+
+Referente ao coeficiente de curtose (Tabela 4) é possível concluir que a distribuição dos dados referentes ao **comprimento total** possui valor menor que 3, caracterizando um comportamento Platocúrtico, ou seja, mais achatado, já a distribuição dos dados referentes a **largura do crânio** apresenta um coeficiente maior que 3, caracterizando um comportamento Leptocúrtico, demonstrando possuir um pico mais acentuado no gráfico, característica identificada nos gráficos de densidade.
+
+Com o intuito de comparar a relação entre as variáveis largura do crânio (**skullw**) e comprimento total (**totlngth**), de forma visual, foi construída a Figura 5.
+
+<!-- \    -->
+<!-- \    -->
+
+
+```{r dispersao1}
+#| echo: false
+#| warning: false
+#| fig-align: center
+
+
+dados|>
+  ggplot(aes(
+    y = skullw, 
+    x = totlngth, color = skullw)) +
+  geom_point()+
+  ggpubr::stat_cor(
+    aes(label = ..r.label..),
+    color="blue", method = "pearson", label.y = 65.5, size = 3)+
+  annotate("text", x = 80, y = 67,
+         label = "Coeficiente de Correlação de Pearson:",
+         size=3, color="blue")+
+  labs(
+    title = 'Figura 5: Relação entre Comprimento Total e Largura do Crânio',
+    x = 'Comprimento Total',
+    y = 'Largura do Crânio',
+  )+
+  theme_bw(base_size = 10)+
+  theme(legend.position = "none")
+
+```
+
+<!-- \    -->
+<!-- \    -->
+
+É possível identificar uma relação linear positiva entre as características em analise, ao se calcular o coeficiente de correlação de Pearson $\widehat{\rho}$ estimado obteve-se o valor de `r round(cor(dados$skullw, dados$totlngth),4)` caracterizando uma relação **regular**.
+
+Para testar a significância da correlação linear ao nível de significância de 5% foi realizado o teste de hipótese para correlação linear, em que a hipótese nula foi rejeitada, podendo assumir com 95% de confiança que **há correlação linear entre as variáveis estudadas**.
+
+<!-- \    -->
+<!-- \    -->
+
+Através da Figura 5 é possível identificar com mais clareza pontos atípicos na relação entre as variáveis morfológicas, a fim de identificar o quão influente são estes pontos no comportamento geral dos dados, a Figura 6 foi construída sem estes pontos.
+
+```{r dispersao2}
+#| echo: false
+#| warning: false
+#| fig-align: center
+
+
+dados|>
+  filter(skullw < 63)|>
+  ggplot(aes(
+    y = skullw, 
+    x = totlngth, color = skullw)) +
+  geom_point()+
+  ggpubr::stat_cor(
+    aes(label = ..r.label..),
+    color="blue", method = "pearson", label.y = 61, size = 3)+
+  annotate("text", x = 80, y = 62,
+         label = "Coeficiente de Correlação de Pearson:",
+         size=3, color="blue")+
+  labs(
+    title = 'Figura 6: Relação entre Comprimento Total e Largura do Crânio \ncom remoção dos pontos atípicos ',
+    x = 'Comprimento Total',
+    y = 'Largura do Crânio')+
+  theme_bw(base_size = 10)+
+  theme(legend.position = "none")
+```
+
+Analisando o comportamento da relação sem os pontos atípicos não se nota diferença significativa acerca do comportamento da relação, permanecendo uma possível relação positiva. Ao se calcular o novo coeficiente de correlação de Pearson $\widehat{\rho}$ estimado obteve-se o valor de `r round(cor(subset(dados$skullw, dados[3]<63), subset(dados$totlngth, dados[3]<63)),4)`, ligeiramente maior que o anteriormente calculado com todos os dados inseridos no cálculo, caracterizando ainda assim uma relação **regular**.
+
+Em seguida foi feito o teste hipótese que avalia a significância da correlação linear ao nível de 5%, em que a hipótese nula foi rejeitada, podendo assumir com 95% de confiança que **permanece a correlação linear entre as variáveis estudadas**.
+
+Tendo em vista a relação linear entre os dados em análise, é adequado o estudo que avaliará se a Largura do crânio pode ser explicada pelo Comprimento total do gambá, o que se vê na figura a seguir.
+
+Verifica-se que é possível ajustar os dados a uma regressão linear com função $f(x) = 25 + 0,36x$ e com coeficiente de correlação de Pearson de 0,65. 
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| error: false
+#| fig-align: center
+
+dados %>% 
+    filter(skullw < 63) %>% 
+    ggplot(aes(x = totlngth, y = skullw, colour = skullw)) +
+    geom_point()+
+    geom_smooth(formula = "y ~ x", method="lm", se=F, color="red", fill="#69b3a2")+
+    ggpubr::stat_regline_equation(color="blue", label.x = 92, label.y = 50, size = 3)+
+    ggpubr::stat_cor(aes(label = ..r.label..),color="blue", method = "pearson", label.y = 61, p.accuracy = 0.001, size = 3)+ 
+    annotate("text", x = 94, y = 51,
+             label = "Modelo Ajustado:",
+             size=3, color="blue")+
+    annotate("text", x = 80, y = 62,
+             label = "Coeficiente de Correlação de Pearson:",
+             size=3, color="blue")+
+    labs(
+      title = 'Figura 7: Modelo de Regressão Ajustado entre \no Comprimento Total e Largura do Crânio',
+      x = 'Comprimento Total',
+      y = 'Largura do Crânio')+
+    theme_bw(base_size = 10)+
+    theme(legend.position = "none")
+```
+
+
+
+
+\newpage
+
+# Segunda parte
+
+## Apresentação
+
+Com base nos dados sobre a eleição presidencial de 2000 nos Estados Unidos, referentes ao número de votos de cada um dos candidatos por condado no estado da Flórida. Deseja-se investigar a relação entre o número de votos que Bush recebeu em relação ao número de votos recebidos por Buchanan, bem como, trazer um pouco de luz sobre o debate referente aos votos recebidos por Buchanan que poderiam ter sido de Al Gore, se o primeiro não estivesse no pleito. Como Bush e Gore foram os candidatos principais daquela eleição, é de interesse avaliar a relação entre os votos recebidos por Bush e Buchanan na Flórida, que é um Estado importante na corrida presidencial dos EUA. Para isto, ajuste um modelo de regressão linear no qual o número de votos de Bush é usado para predizer o número de votos de Buchanan.  
+Os dados estão disponíveis no arquivo "florida.csv". 
+
+
+## Objetivos
+
+O objetivo dessa análise responderá as seguintes questões:
+
+(a) Discutir a relação entre os votos recebidos por Bush e por Buchanan através do uso
+de diagramas de dispersão.  
+
+(b) Avaliar a relevância do argumento que os votos de Buchanan poderiam ser direcionados a Al Gore, caso Buchanan não tivesse participado do pleito.  
+
+(c) Tratar dados atipicos.  
+
+(d) Obter uma reta ajustada aos dados tratados e predizer a votação de Buchanan caso Bush receba 152.846 votos em determinado condado.  
+
+(e) Criar um programa baseado em estimativas de mínimos quadrados, prever a votação de Buchanan, sob as mesmas condições e compará-las.
+
+## Análise dos dados
+
+O gráfico de dispersão sugere certa correlação positiva entre os votos de Bush e Buchanan, muito embora se observe que no condado de Palm Beach a votação de Buchanan (3.407 votos) represente um dado inesperado, bem como, em menor medida, a votação de Bush em Dade (289.456 votos). Retirados estes valores discrepantes, esta provável correlação parece ainda mais certa.
+
+
+
+
+```{r}
+#| echo: false
+#| warning: false
+
+# DADOS ----
+dados <- read.csv2("florida.csv")
+m.bh = max(dados$BUSH)
+m.bn = max(dados$BUCHANAN)
+aux = dados %>% dplyr::filter(dados$BUSH < m.bh)
+dados.sem = aux %>% dplyr::filter(aux$BUCHANAN < m.bn)
+
+d1 <- dados |>
+  ggplot(aes(
+    x = BUSH, 
+    y = BUCHANAN, color = BUCHANAN)) +
+  geom_point()+
+  labs(
+    title = '',
+    x = 'Votos em Bush',
+    y = 'Votos em Buchanan'
+  )+
+  scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    )) +
+  geom_text(
+     x = 280000, 
+     y = 100, 
+     label= "(a)",
+     colour= "darkgray")
+
+d1.1 <- dados.sem |>
+  ggplot(aes(
+    x = BUSH, 
+    y = BUCHANAN, color = BUCHANAN)) +
+  geom_point()+
+  labs(
+    title = '',
+    x = 'Votos em Bush',
+    y = 'Votos em Buchanan'
+  )+
+  scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))+
+    geom_text(
+     x = 180000, 
+     y = 30, 
+     label= "(b)",
+     colour= "darkgray")
+
+d1+d1.1+plot_annotation(
+  title = "Figura 8: Relação entre votos recebidos por Bush e por Bachanan nos condados \n da Flórida. (a) Dados completos, (b) Sem dados discrepantes",
+   caption = "Fonte: 2000 OFFICIAL PRESIDENTIAL GENERAL ELECTION RESULTS - USA") &
+  theme_bw(base_size = 8) &
+  theme(
+    legend.position = "none",
+    plot.tag.position = c(0, 1),
+    plot.tag = element_text(size = 8, hjust = 0, vjust = 0)
+   ) 
+```
+
+\   
+
+Embora a Figura 8 sugira certa correlação positiva entre os votos de Bush e Buchanan, a análise destes mesmos votos em relação a votação recebida por Al Gore e os votos totais dos condados parece retratar outra realidade (ver Figura 9), qual seja, que a correlação positiva é mais propriamente deviada a um fator externo, e não avaliado inicialmente, que corresponde ao aumento de eleitores nos condados. Desta forma, não parece ser plausível afirmar que a votação dada ao candidato Buchanan seria direcionada a qualquer dos candidatos caso este não participasse do pleito.  
+
+Uma maior compreenção da dispersão dos dados das votações dos candidatos, optou-se por analizar a variabilidade dos dados de votação dos candidatos. Na Tabela 5 é possível verificar uma maior variabilidade dos votos do candidato Bush em todas as análise realizadas, o que se deve principalmente a quantidade muito superior de votos recebidos.  
+
+
+
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| tbl-colum: page
+
+## Amplitude total
+amplitude1 <- max(dados.sem$BUSH)- min(dados.sem$BUSH)
+amplitude2 <- max(dados.sem$BUCHANAN)- min(dados.sem$BUCHANAN)
+## Desvio médio absoluto
+desvio_medio_abs1<-round(sum(abs(dados.sem$BUSH-mean(dados.sem$BUSH))),0)
+desvio_medio_abs2<-round(sum(abs(dados.sem$BUCHANAN-mean(dados.sem$BUCHANAN))),0)
+## Variância
+variancia1<-round(var(dados.sem$BUSH),0)
+variancia2<-round(var(dados.sem$BUCHANAN),0)
+## Desvio Padrão
+desvio_padrão1 <- round(sd(dados.sem$BUSH),0)
+desvio_padrão2 <- round(sd(dados.sem$BUCHANAN),0)
+## Coeficiente de variação
+coef_var1<-round((desvio_padrão1/mean(dados.sem$BUSH))*100,0)
+coef_var2<-round((desvio_padrão2/mean(dados.sem$BUCHANAN))*100,0)
+
+resumo1 <- cbind(amplitude1,desvio_medio_abs1,variancia1,desvio_padrão1, coef_var1)
+resumo2 <- cbind(amplitude2,desvio_medio_abs2,variancia2,desvio_padrão2, coef_var2)
+resumo <- rbind(resumo1, resumo2)
+rownames(resumo) = c("Bush","Buchanan")
+colnames(resumo) = c("Amplit.","Desvio abs","Variancia","D. Padrão",                          "C. Var.")
+resumo |> kbl(
+      caption = "Medidas de Variabilidade dos votos dos candidatos.",
+      format.args=list(big.mark=".", decimal.mark=","),
+      digits = 2, align = "c",
+      row.names = T
+    )|>
+    kable_material(c("striped", "hover", "condensed"))|>
+    kable_material() |>
+    kable_styling(position = 'center',latex_options = 'HOLD_position')
+
+```
+\  
+
+Quando o efeito da maior quantidade de votos é retirado, isto é, na análise do coeficiente de variação observa-se que a votação do candidato Bush tem uma dispersão mediana enquanto a do candidato Buchanan é bastante mais homogênea.
+
+Assumindo que haja uma correlação entre os votos dos dois candidatos é possível realizar uma regressão linear a partir dos dados dos votos dos condados, como mostra a figura abaixo.  
+
+
+```{r}
+#| echo: false
+#| warning: false
+
+
+d1 <- dados |>
+  ggplot(aes(
+    x = GORE, 
+    y = BUCHANAN, color = BUCHANAN)) +
+  geom_point()+
+  labs(
+    title = '',
+    x = 'Votos em Gore',
+    y = 'Votos em Buchanan'
+  )+
+  scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))+
+  geom_text(
+     x = 10000, 
+     y = 3000, 
+     label= "(a)",
+     colour= "darkgray") 
+
+d1.1 <- dados.sem |>
+  ggplot(aes(
+    x = GORE, 
+    y = BUCHANAN, color = BUCHANAN)) +
+  geom_point()+
+  labs(
+    title = '',
+    x = 'Votos em Gore',
+    y = 'Votos em Buchanan'
+  )+
+  scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))+
+  geom_text(
+     x = 10500, 
+     y = 880, 
+     label= "(b)",
+     colour= "darkgray") 
+
+d2 <- dados |>
+  ggplot(aes(
+    x = TOTAL, 
+    y = BUCHANAN, color = BUCHANAN)) +
+  geom_point()+
+  labs(
+    title = '',
+    x = 'Total de votos do condado',
+    y = 'Votos em Buchanan'
+  )+
+  scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))+
+    geom_text(
+     x = 11000, 
+     y = 3000, 
+     label= "(c)",
+     colour= "darkgray") 
+
+d2.2 <- dados.sem |>
+  ggplot(aes(
+    x = TOTAL, 
+    y = BUCHANAN, color = BUCHANAN)) +
+  geom_point()+
+  labs(
+    title = '',
+    x = 'Total de votos do condado',
+    y = 'Votos em Buchanan'
+  )+
+  scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))  +
+  geom_text(
+     x = 10500, 
+     y = 880, 
+     label= "(d)",
+     colour= "darkgray") 
+  
+(d1+d1.1)/(d2+d2.2) + plot_annotation(
+  title = "Figura 9: Relação entre votos recebidos por Gore e por Bachanan nos condados \n da Flórida. (a) Dados completos (Gore), (b) Sem dados discrepantes (Gore), \n (c) Dados completos (Total), (d) Sem dados discrepantes (Total)", 
+  caption = "Fonte: 2000 OFFICIAL PRESIDENTIAL GENERAL ELECTION RESULTS - USA") &
+  theme_bw(base_size = 8) &
+  theme(
+    legend.position = "none",
+    plot.tag.position = c(0, 1),
+    plot.tag = element_text(size = 8, hjust = 0, vjust = 0)
+  )
+
+```
+
+
+
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+reg = lm(dados.sem$BUSH ~ dados.sem$BUCHANAN)
+intercepto = round(reg$coefficients[1][[1]],0)
+c.angular = round(reg$coefficients[2][[1]],2)
+resposta = round((152846 - intercepto)/c.angular, 0)
+```
+
+A Figura 10 mostra a reta de regressão linear obtida, que tem como função $f(x) =$ `r intercepto` $+$ `r c.angular`$x$. Com base nesta regressão é possível inferir que caso o candidato Bush tivesse recebido 152.846 votos em um determinado condado, a votação do canditato Buchanan seria de aproximandamente `r resposta` votos.
+
+
+
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| tbl-colum: page
+
+d1<- dados.sem |>
+  ggplot(aes(
+    x = BUSH, 
+    y = BUCHANAN, color = BUCHANAN)) +
+  geom_point()+
+  labs(
+    title = '',
+    x = 'Votos em Bush',
+    y = 'Votos em Buchanan'
+  )+
+  scale_y_continuous(
+    labels = scales::number_format(
+      big.mark = ".",
+      decimal.mark = ","
+    ))+
+  geom_smooth(method=lm, se=FALSE)
+
+d1+plot_annotation(
+  title = "Figura 10: Relação entre votos recebidos por Bush e por Bachanan nos condados \n da Flórida e sua regressão linear.") &
+  theme_bw(base_size = 8) &
+  theme(
+    legend.position = "none",
+    plot.tag.position = c(0, 1),
+    plot.tag = element_text(size = 8, hjust = 0, vjust = 0)
+  )
+```
+
+
+É possível elaborar um código de programação em linguagem R que realize esta mesma previsão utilizando-se do método de Estimativas de Mínimos Quadrados, para se obter $\hat\beta_0$ e $\hat\beta_1$ e assim, prever um valor de votação do canditato Buchanan sob as mesmas condições, como se segue:
+
+\   
+
+
+```{r}
+#| warning: false
+#| eval: true
+#| results: false
+#| echo: true
+
+x = dados$BUSH
+y = dados$BUCHANAN
+n = length(x)
+beta1 = (sum(x*y) - as.numeric(sum(x)) * as.numeric(sum(y))/n) /
+  (sum(x^2) - ((sum (x))^2)/n)
+beta0 = mean(y) - beta1 * mean(x)
+votos = round(beta0 + 152846 * beta1, 0)
+
+cat("Caso o candidato Bush tivesse recebido 152.846 votos em um 
+    determinado condado, a votação do canditato Buchanan seria 
+    de aproximandamente", votos," votos.")
+
+```
+
+\   
+  
+
+Executando o código acima, obtém-se a estimação por mínimos quadrados de `r votos` votos. Observa-se que por regressão linear a resposta foi de `r resposta` votos, desta forma, percebe-se que ambos os métodos foram similares na predição da votação do candidato Buchanan.
+
+# Conclusão
+
+
+
+Diante do modelo gerado baseado nas 104 características coletadas dos gambás se conclui que a cada unidade de comprimento acrescida a largura do crânio cresce 0,36 unidades de comprimento e na condição hipotética de se identificar um comprimento nulo, a largura do crânio seria de 25 unidades de comprimento.
+
+Mesmo que em certas condições, existam afirmações impossíveis de serem sustentadas, o que acertadamente se constata é que a largura do crânio dos gambas é diretamente proporcional ao comprimento total do mesmo.
+  
+  
+Quanto a análise do dados da eleição presidencial de 2000 nos Estados Unidos, a atividade permite avaliar um modelos de predição que tem boa aderência aos dados disponibilizados, ao mesmo tempo que mostra a fragilidade da técnica quando assume que a correlação entre as votações dos candidatos pode ser explicada apenas pelos votos observados.  
+
+
